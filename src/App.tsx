@@ -1,20 +1,13 @@
-import { useAuth } from './context/auth'; // Используем ваш хук для получения контекста
-import './App.css';
+import React from 'react';
+import { AuthProvider } from './context/AuthProvider';
+import Header from './components/Layout/Header/Header';
 
 function App() {
-	const { isSignedIn, userInfo, signIn, signOut } = useAuth(); // Получаем значения из контекста
-
 	return (
-		<div>
-			{isSignedIn ? (
-				<>
-					<h1>Welcome, {userInfo?.getName()}</h1>
-					<button onClick={signOut}>Logout</button>
-				</>
-			) : (
-				<button onClick={signIn}>Login with Google</button>
-			)}
-		</div>
+		<AuthProvider>
+			<Header />
+			{/* Другие компоненты */}
+		</AuthProvider>
 	);
 }
 

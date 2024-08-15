@@ -40,20 +40,40 @@ export const useGoogleAuth = () => {
 		gapi.load('client:auth2', initClient);
 	}, []);
 
-	const signIn = () => {
-		const authInstance = gapi.auth2.getAuthInstance();
-		authInstance.signIn().then(() => {
+	// const signIn = () => {
+	// 	const authInstance = gapi.auth2.getAuthInstance();
+	// 	authInstance.signIn().then(() => {
+	// 		setIsSignedIn(true);
+	// 		setUserInfo(authInstance.currentUser.get().getBasicProfile());
+	// 	});
+	// };
+	const signIn = async () => {
+		try {
+			const authInstance = gapi.auth2.getAuthInstance();
+			await authInstance.signIn(); // Это аутентификация
 			setIsSignedIn(true);
 			setUserInfo(authInstance.currentUser.get().getBasicProfile());
-		});
+		} catch (error) {
+			console.error('Error signing in:', error);
+		}
 	};
 
-	const signOut = () => {
-		const authInstance = gapi.auth2.getAuthInstance();
-		authInstance.signOut().then(() => {
+	// const signOut = () => {
+	// 	const authInstance = gapi.auth2.getAuthInstance();
+	// 	authInstance.signOut().then(() => {
+	// 		setIsSignedIn(false);
+	// 		setUserInfo(null);
+	// 	});
+	// };
+	const signOut = async () => {
+		try {
+			const authInstance = gapi.auth2.getAuthInstance();
+			await authInstance.signOut(); // Это аутентификация
 			setIsSignedIn(false);
 			setUserInfo(null);
-		});
+		} catch (error) {
+			console.error('Error signing out:', error);
+		}
 	};
 
 	return { isSignedIn, userInfo, signIn, signOut };
