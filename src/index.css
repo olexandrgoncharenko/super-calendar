@@ -79,3 +79,10 @@ h6 {
 	font-weight: inherit;
 }
 /*--------------------*/
+#root {
+	height: 100%;
+}
+.container {
+	display: flex;
+	height: 100%;
+}
