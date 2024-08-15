@@ -1,7 +1,7 @@
 // import React, { useState } from 'react';
 import styles from './Calendar.module.css';
 import { useDaysToShowInCalendar } from '../../../hooks/useDaysToShowInCalendar';
-// import MonthFilter from '../MonthFilter/MonthFilter';
+import MonthFilter from '../MonthFilter/MonthFilter';
 
 const CalendarNew = () => {
 	const dateNow = new Date(); // Текущая дата
