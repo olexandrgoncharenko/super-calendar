@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './Header.module.css';
 import { useAuth } from '../../../context/useAuth';
-import GoogleAuthButton from '../../GoogleAuthButton/GoogleAuthButton';
+import GoogleAuthButton from '../../UI/GoogleAuthButton/GoogleAuthButton';
 
 const Header: React.FC = () => {
 	const { isSignedIn, userInfo, signIn, signOut } = useAuth();

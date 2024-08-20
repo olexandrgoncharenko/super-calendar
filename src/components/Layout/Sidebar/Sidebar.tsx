@@ -1,10 +1,11 @@
-// import Calendar from './../../Calendar/Calendar/Calendar';
-import CalendarNew from '../../CalendarNew/CalendarNew/CalendarNew';
+import Calendar from '../../Calendar/Calendar/Calendar';
 import styles from './Sidebar.module.css';
 
 const Sidebar = () => {
-	// const Sidebar = (props) => {
-	return <aside className={styles.sidebar}>{<CalendarNew />}</aside>;
+	return (
+		<aside className={styles.sidebar}>
+			<Calendar />
+		</aside>
+	);
 };
-
 export default Sidebar;
