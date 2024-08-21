@@ -6,7 +6,7 @@ import { setView, ViewType } from '../../../store';
 
 const FieldFilter: React.FC = () => {
 	const currentView = useSelector((state: RootState) => state.view);
-	console.log(`current view: ${currentView}`);
+	// console.log(`current view: ${currentView}`);
 	const dispatch = useDispatch();
 
 	const handleClick = (view: ViewType) => {
