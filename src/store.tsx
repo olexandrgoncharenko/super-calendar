@@ -18,14 +18,27 @@ type SetView = {
 
 type Action = SetCurrentDate | SetView;
 
+let initialCurrentDate = new Date();
+// initialCurrentDate.setUTCHours(0, 0, 0, 0);
+initialCurrentDate.setUTCHours(0, 0, 0, 0);
+
+// console.log(`initialCurrentDate: ${initialCurrentDate}`);
+const finalInitialDate = initialCurrentDate.toISOString();
+
+// console.log(`finalInitialDate: ${finalInitialDate}`);
+
 const initialState: State = {
-	currentDate: new Date().toISOString(),
+	currentDate: finalInitialDate,
 	view: 'week',
 };
 
-export const setCurrentDate = (date: Date) => ({
+// export const setCurrentDate = (date: Date) => ({
+// 	type: 'SET_CURRENT_DATE',
+// 	payload: date.toISOString(),
+// });
+export const setCurrentDate = (date: string) => ({
 	type: 'SET_CURRENT_DATE',
-	payload: date.toISOString(),
+	payload: date,
 });
 
 export const setView = (view: ViewType) => ({

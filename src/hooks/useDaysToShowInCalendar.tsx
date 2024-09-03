@@ -8,6 +8,7 @@ interface DaysToDisplay {
 }
 
 export const useDaysToShowInCalendar = (date: Date): DaysToDisplay[] => {
+	// console.log(`date: ${date}`); //+3 hours
 	const currentYear = date.getFullYear();
 	const currentMonth = date.getMonth();
 	const numberOfDaysInCurrentMonth = getNumberOfDaysInMonth(
