@@ -4,14 +4,24 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { getDatesForWeek } from '../../../utils/getDatesForWeek';
 import { useAuth } from '../../../context/useAuth';
-import { useCalendarEvents } from '../../../hooks/useCalendarEvents';
+// import { useCalendarEvents } from '../../../hooks/useCalendarEvents';
 
-import { TaskList } from '../../../hooks/useGoogleAuth';
+// import { TaskList } from '../../../hooks/useGoogleAuth';
+// import { json } from 'stream/consumers';
 
 // interface TaskList {
 // 	id: string;
 // 	title: string;
 // }
+
+// import {
+// 	RootState,
+// 	// AppDispatch,
+// 	// toggleTaskList,
+// 	// toggleCalendarList,
+// 	// initializeSelectedTaskLists,
+// 	// initializeSelectedCalendarLists,
+// } from './../../../store';
 
 const timeSlots = [
 	'00:00-01:00',
@@ -46,11 +56,139 @@ const DayOrWeekView: React.FC = () => {
 	const [datesForDisplay, setDatesForDisplay] = useState<string[]>(() => {
 		return view === 'week' ? getDatesForWeek(currentDate) : [currentDate];
 	});
-	const [startDateToFetch, setStartDateToFetch] = useState<string>('');
-	const [endDateToFetch, setEndDateToFetch] = useState<string>('');
+	const selectedCalendarLists = useSelector(
+		(state: RootState) => state.selectedCalendarLists
+	);
+
+	console.log(`selectedCalendarLists: ${selectedCalendarLists}`);
+
+	const { allTasks, allEvents, isSignedIn } = useAuth();
+
+	console.log(allEvents);
+
+	// const filteredEventsByDate = (calendars) => {
+	// 	let filteredCalendars = [];
+
+	// 	calendars.forEach((calendar: any) => {
+	// 		if (calendar.id === selectedCalendarLists.find(calendar.id)) {
+	// 			console.log(`it's match`);
+	// 		}
+	// 	});
+	// };
+
+	// const startDate = new Date(datesForDisplay[0]);
+	// console.log(`startDate: ${startDate.toISOString()}`);
+
+	// const filteredCalendarsByChecked = (calendars: any) => {
+	// 	const filteredEvents = calendars.filter((event: any) =>
+	// 		selectedCalendarLists.includes(event.id)
+	// 	);
+
+	// 	// Вернуть или отобразить отфильтрованные события
+	// 	console.log('Отфильтрованные события:', filteredEvents);
+	// 	return filteredEvents;
+	// };
+
+	// const filteredEventsByDate = (events: any) => {
+	// 	const filteredEvents = events
+	// 		.filter(
+	// 			(event: any) => selectedCalendarLists.includes(event.calendarId) // фильтрация по календарям
+	// 		)
+	// 		.map((calendar: any) => {
+	// 			const filteredEvents = calendar.events.filter((event: any) => {
+	// 				const eventStart = new Date(
+	// 					event.start.dateTime || event.start.date
+	// 				);
+	// 				const eventEnd = new Date(
+	// 					event.end.dateTime || event.end.date
+	// 				);
+
+	// 				// Проверка, попадает ли событие в диапазон дат отображения
+	// 				return datesForDisplay.some((dateStr) => {
+	// 					const currentDisplayDate = new Date(dateStr);
+	// 					return (
+	// 						eventStart <= currentDisplayDate &&
+	// 						eventEnd >= currentDisplayDate
+	// 					);
+	// 				});
+	// 			});
+
+	// 			return {
+	// 				...calendar,
+	// 				events: filteredEvents,
+	// 			};
+	// 		});
+
+	// 	console.log('Отфильтрованные события:', filteredEvents);
+	// 	return filteredEvents;
+	// };
+
+	const filteredEventsByDate = (events) => {
+		if (selectedCalendarLists.length === 0) {
+			console.log('Нет выбранных календарей');
+			return [];
+		}
+
+		const filteredEvents = events
+			.filter(
+				(event: any) => selectedCalendarLists.includes(event.calendarId) // фильтрация по календарям
+			)
+			.map((calendar: any) => {
+				const filteredEvents = calendar.events.filter((event: any) => {
+					const eventStart = new Date(
+						event.start.dateTime || event.start.date
+					);
+					const eventEnd = new Date(
+						event.end.dateTime || event.end.date
+					);
+
+					// Проверка, попадает ли событие в диапазон дат отображения
+					return datesForDisplay.some((dateStr) => {
+						const currentDisplayDate = new Date(dateStr);
+						return (
+							eventStart <= currentDisplayDate &&
+							eventEnd >= currentDisplayDate
+						);
+					});
+				});
+
+				return {
+					...calendar,
+					events: filteredEvents,
+				};
+			});
+
+		console.log('Отфильтрованные события:', filteredEvents);
+		return filteredEvents;
+	};
+	useEffect(() => {
+		if (
+			isSignedIn &&
+			allEvents.length > 0 &&
+			selectedCalendarLists.length > 0
+		) {
+			const filteredEvents = filteredEventsByDate(allEvents);
+			// Логика работы с отфильтрованными событиями
+		} else {
+			console.log('Загрузка календарей или событий...');
+		}
+	}, [isSignedIn, allEvents, selectedCalendarLists, datesForDisplay]);
+
+	// useEffect(() => {
+	// 	if (isSignedIn && allEvents.length > 0) {
+	// 		const filteredEvents = filteredCalendarsByChecked(allEvents);
+	// 		// Дальнейшая логика обработки отфильтрованных событий
+	// 	}
+	// }, [isSignedIn, allEvents, selectedCalendarLists]);
+
+	// const [startDateToFetch, setStartDateToFetch] = useState<string>('');
+	// const [endDateToFetch, setEndDateToFetch] = useState<string>('');
 
 	// const { userTasklists } = useAuth();
 	// console.log(`userTasklists ${userTasklists}`);
+
+	// const allTasks = useAuth();
+	// console.log(JSON.stringify(allTasks));
 
 	useEffect(() => {
 		const updatedDates =
@@ -58,42 +196,23 @@ const DayOrWeekView: React.FC = () => {
 		setDatesForDisplay(updatedDates);
 	}, [view, currentDate]);
 
-	useEffect(() => {
-		if (datesForDisplay.length > 0) {
-			const startDate = new Date(datesForDisplay[0]);
-			const endDate = new Date(
-				datesForDisplay[datesForDisplay.length - 1]
-			);
+	// let startDateToShowEvents;
 
-			setStartDateToFetch(startDate.toISOString());
-			setEndDateToFetch(
-				new Date(
-					Date.UTC(
-						endDate.getFullYear(),
-						endDate.getMonth(),
-						endDate.getDate(),
-						23,
-						59,
-						59
-					)
-				).toISOString()
-			);
-		}
-	}, [datesForDisplay]);
+	// const { events } = useCalendarEvents(startDateToFetch, endDateToFetch);
 
-	const { events } = useCalendarEvents(startDateToFetch, endDateToFetch);
+	// console.log(`events DW: ${events}`);
 
-	useEffect(() => {
-		if (events.length > 0) {
-			console.log('Fetched events:', events);
-		} else {
-			console.log('No events fetched');
-		}
-	}, [events]);
+	// useEffect(() => {
+	// 	if (events.length > 0) {
+	// 		console.log('Fetched events:', events);
+	// 	} else {
+	// 		console.log('No events fetched');
+	// 	}
+	// }, [events]);
 
-	if (!startDateToFetch || !endDateToFetch) {
-		return <div>Завантаження...</div>;
-	}
+	// if (!startDateToFetch || !endDateToFetch) {
+	// 	return <div>Завантаження...</div>;
+	// }
 
 	return (
 		<div className={styles.week}>

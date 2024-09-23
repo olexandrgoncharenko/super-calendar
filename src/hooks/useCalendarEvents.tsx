@@ -31,30 +31,9 @@ export const useCalendarEvents = (start: string, end: string) => {
 
 	if (isSignedIn) {
 		try {
-			// const timeMin = start;
-			// const timeMax = end;
-
-			// console.log(start);
-
-			// const startDate = start;
-
-			//2024-09-02T00:00:00.000Z
-			// console.log(start);
-			// console.log(end);
-
-			// const editedStartDate = new Date(start).toISOString();
-
-			// console.log(start);
-
-			apiCalendar
-				.listEvents({
-					maxResults: 999,
-					timeMax: end,
-					timeMin: start,
-				})
-				.then(({ result }: any) => {
-					// console.log(result.items);
-				});
+			apiCalendar.listCalendars().then(({ result }: any) => {
+				console.log(result);
+			});
 		} catch (err: any) {
 			// console.error('Помилка завантаження подій:', err);
 			// setError('Не вдалося завантажити події. Спробуйте пізніше.');
