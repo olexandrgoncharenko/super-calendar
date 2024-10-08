@@ -25,7 +25,7 @@ const CalendarList = () => {
 		(state: RootState) => state.selectedCalendarLists
 	);
 
-	// console.log(`selectedCalendarLists: ${selectedCalendarLists}`);
+	// console.log(`selectedCalendarLists CL: ${selectedCalendarLists}`);
 
 	const dispatch = useDispatch<AppDispatch>(); // Диспетчер для Redux
 

@@ -268,34 +268,122 @@ export const useGoogleAuth = () => {
 	// 	// 	});
 	// };
 
+	// const fetchEventsForAllCalendarLists = async () => {
+	// 	try {
+	// 		const calendarListWithEvents: CalendarListWithEvents[] = [];
+
+	// 		for (const calendarList of userCalendarLists) {
+	// 			const response = await apiCalendar.listUpcomingEvents(
+	// 				999,
+	// 				calendarList.id
+	// 			);
+	// 			if (response && response.result && response.result.items) {
+	// 				calendarListWithEvents.push({
+	// 					id: calendarList.id,
+	// 					title: calendarList.title,
+	// 					events: response.result.items.map((event: any) => ({
+	// 						id: event.id,
+	// 						summary: event.summary,
+	// 						start: event.start,
+	// 						end: event.end,
+	// 					})),
+	// 				});
+	// 			} else {
+	// 				console.warn(
+	// 					`No events found for calendar ID: ${calendarList.id}`
+	// 				);
+	// 			}
+	// 		}
+	// 		// Store or use calendarListWithEvents as needed
+	// 		// console.log(calendarListWithEvents);
+	// 		setAllEvents(calendarListWithEvents);
+	// 	} catch (err) {
+	// 		console.error('Error fetching events for all calendar lists:', err);
+	// 		setError('Failed to load calendar events. Please try again later.');
+	// 	}
+	// };
+
 	const fetchEventsForAllCalendarLists = async () => {
 		try {
 			const calendarListWithEvents: CalendarListWithEvents[] = [];
 
+			// Встановлюємо обмеження часу для завершених подій
+			const now = new Date();
+			const oneYearAgo = new Date();
+			oneYearAgo.setFullYear(now.getFullYear() - 1); // Отримуємо події за останній рік
+
 			for (const calendarList of userCalendarLists) {
-				const response = await apiCalendar.listUpcomingEvents(
+				// Отримуємо майбутні події
+				const upcomingResponse = await apiCalendar.listUpcomingEvents(
 					999,
 					calendarList.id
 				);
-				if (response && response.result && response.result.items) {
-					calendarListWithEvents.push({
-						id: calendarList.id,
-						title: calendarList.title,
-						events: response.result.items.map((event: any) => ({
+
+				// console.log(upcomingResponse);
+
+				// Отримуємо завершені події (за останній рік або будь-який інший період)
+				const completedResponse = await apiCalendar.listEvents({
+					calendarId: calendarList.id,
+					maxResults: 999,
+					timeMax: now.toISOString(), // Поточний час
+					timeMin: oneYearAgo.toISOString(), // Один рік тому
+					orderBy: 'startTime',
+					singleEvents: true,
+				});
+
+				const allEvents = [];
+
+				// Додаємо майбутні події, якщо вони є
+				if (
+					upcomingResponse &&
+					upcomingResponse.result &&
+					upcomingResponse.result.items
+				) {
+					allEvents.push(
+						...upcomingResponse.result.items.map((event: any) => ({
 							id: event.id,
 							summary: event.summary,
 							start: event.start,
 							end: event.end,
-						})),
-					});
+						}))
+					);
 				} else {
 					console.warn(
-						`No events found for calendar ID: ${calendarList.id}`
+						`No upcoming events found for calendar ID: ${calendarList.id}`
 					);
 				}
+
+				// Додаємо завершені події, якщо вони є
+				if (
+					completedResponse &&
+					completedResponse.result &&
+					completedResponse.result.items
+				) {
+					allEvents.push(
+						...completedResponse.result.items.map((event: any) => ({
+							id: event.id,
+							summary: event.summary,
+							start: event.start,
+							end: event.end,
+						}))
+					);
+				} else {
+					console.warn(
+						`No completed events found for calendar ID: ${calendarList.id}`
+					);
+				}
+
+				// Зберігаємо всі події для конкретного календаря
+				if (allEvents.length > 0) {
+					calendarListWithEvents.push({
+						id: calendarList.id,
+						title: calendarList.title,
+						events: allEvents,
+					});
+				}
 			}
-			// Store or use calendarListWithEvents as needed
-			// console.log(calendarListWithEvents);
+
+			// Оновлюємо стан з усіма подіями
 			setAllEvents(calendarListWithEvents);
 		} catch (err) {
 			console.error('Error fetching events for all calendar lists:', err);
