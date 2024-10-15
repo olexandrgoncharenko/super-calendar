@@ -112,3 +112,28 @@
 	display: flex;
 	justify-content: space-between;
 }
+
+.header {
+	display: grid;
+	grid-template-columns: 80px repeat(7, 1fr); /* 80px для колонки времени */
+}
+
+.weekdays {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+}
+
+.dayContainer {
+	border: 1px solid #ccc;
+	position: relative;
+}
+
+.fullDayEvent {
+	background-color: lightblue;
+	padding: 5px;
+	border-radius: 3px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	grid-column: span 1; /* значение по умолчанию */
+}
