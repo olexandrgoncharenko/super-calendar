@@ -1,5 +1,5 @@
 import styles from './FieldHeader.module.css';
-import { CalendarEvent } from '../Field/DayOrWeekView/DayOrWeekView';
+import { CalendarEvent } from './../../types/CalendarEvent';
 import FieldHeaderPresentation from '../FieldHeaderPresentation/FieldHeaderPresentation';
 
 type FieldHeaderProps = {
@@ -98,7 +98,10 @@ const FieldHeader: React.FC<FieldHeaderProps> = ({ dates, fullDayEvents }) => {
 			</div>
 			<div style={{ width: '100%', display: 'flex' }}>
 				<div className={styles.timeColumn}></div>
-				<FieldHeaderPresentation fullDayEvents={fullDayEvents} />
+				<FieldHeaderPresentation
+					fullDayEvents={fullDayEvents}
+					dates={dates}
+				/>
 			</div>
 		</div>
 	);

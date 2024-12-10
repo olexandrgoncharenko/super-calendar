@@ -3,27 +3,19 @@ import { getFirstDayOfMonth } from './../utils/getFirstDayOfMonth';
 
 interface DaysToDisplay {
 	date: Date;
+	// year: number;
 	day: number;
 	isCurrentMonth: boolean;
 }
 
-export const useDaysToShowInCalendar = (date: Date): DaysToDisplay[] => {
-	// console.log(`date: ${date}`); //+3 hours
-	const currentYear = date.getFullYear();
-	const currentMonth = date.getMonth();
-	const numberOfDaysInCurrentMonth = getNumberOfDaysInMonth(
-		currentYear,
-		currentMonth
-	);
-	const firstDayOfCurrentMonth = getFirstDayOfMonth(
-		currentYear,
-		currentMonth
-	);
+export const useDaysToShowInCalendar = (
+	year: number,
+	month: number
+): DaysToDisplay[] => {
+	const numberOfDaysInCurrentMonth = getNumberOfDaysInMonth(year, month);
+	const firstDayOfCurrentMonth = getFirstDayOfMonth(year, month);
 	const daysBeforeFirstMonthDay = (firstDayOfCurrentMonth + 6) % 7;
-	const daysInPreviousMonth = getNumberOfDaysInMonth(
-		currentYear,
-		currentMonth - 1
-	);
+	const daysInPreviousMonth = getNumberOfDaysInMonth(year, month - 1);
 	const daysToDisplay: DaysToDisplay[] = [];
 
 	const addDays = (
@@ -46,19 +38,19 @@ export const useDaysToShowInCalendar = (date: Date): DaysToDisplay[] => {
 	};
 
 	addDays(
-		currentYear,
-		currentMonth === 0 ? 11 : currentMonth - 1, // Корректировка для января
+		year,
+		month === 0 ? 11 : month - 1, // Корректировка для января
 		daysInPreviousMonth - daysBeforeFirstMonthDay + 1,
 		daysInPreviousMonth,
 		false
 	);
 
-	addDays(currentYear, currentMonth, 1, numberOfDaysInCurrentMonth, true);
+	addDays(year, month, 1, numberOfDaysInCurrentMonth, true);
 
 	const remainingDays = 42 - daysToDisplay.length;
 	addDays(
-		currentYear,
-		currentMonth === 11 ? 0 : currentMonth + 1, // Корректировка для декабря
+		year,
+		month === 11 ? 0 : month + 1, // Корректировка для декабря
 		1,
 		remainingDays,
 		false

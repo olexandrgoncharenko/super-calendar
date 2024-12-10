@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { gapi } from 'gapi-script';
 import ApiCalendar from 'react-google-calendar-api';
 
+import { DateTime } from 'luxon';
+
+import { formatEventToLocalTime } from '../utils/formatEventToLocalTime';
+import { FetchedEvent } from '../types/FetchedEvent';
+import { CalendarEvent } from './../types/CalendarEvent';
+
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
 const API_KEY = process.env.REACT_APP_API_KEY;
 const DISCOVERY_DOCS = [
@@ -36,13 +42,13 @@ interface Task {
 	// }>;
 }
 
-interface Event {
-	id: string;
-	summary: string;
-	start: { dateTime?: string; date?: string };
-	end: { dateTime?: string; date?: string };
-	[key: string]: any;
-}
+// interface Event {
+// 	id: string;
+// 	summary: string;
+// 	start: { dateTime?: string; date?: string };
+// 	end: { dateTime?: string; date?: string };
+// 	[key: string]: any;
+// }
 export interface TaskListWithTasks {
 	id: string;
 	title: string | undefined; //?
@@ -53,7 +59,8 @@ export interface CalendarListWithEvents {
 	id: string;
 	title: string | undefined; //?
 	// tasks: Task[];
-	events: Event[];
+	// events: Event[];
+	events: CalendarEvent[];
 }
 
 export const useGoogleAuth = () => {
@@ -70,7 +77,7 @@ export const useGoogleAuth = () => {
 	const [allTasks, setAllTasks] = useState<TaskListWithTasks[]>([]);
 	const [allEvents, setAllEvents] = useState<CalendarListWithEvents[]>([]);
 
-	// console.log(allTasks);
+	// console.log(`allEvents: ${JSON.stringify(allEvents)}`);
 
 	if (!CLIENT_ID || !API_KEY) {
 		throw new Error(
@@ -201,6 +208,52 @@ export const useGoogleAuth = () => {
 		}
 	}, [isSignedIn]);
 
+	// const formatEventToLocalTime = (event: any) => {
+	// 	let startDateTime, endDateTime;
+
+	// 	// Обрабатываем начало события
+	// 	if (event.start.dateTime) {
+	// 		startDateTime = DateTime.fromISO(
+	// 			event.start.dateTime,
+	// 			// { zone: 'UTC' }
+	// 			{ zone: event.start.timeZone || 'UTC' } // Если timeZone отсутствует, используем UTC
+	// 		).toLocal();
+	// 	} else if (event.start.date) {
+	// 		// startDateTime = DateTime.fromISO(
+	// 		// 	event.start.date,
+	// 		// 	{ zone: 'UTC' }
+	// 		// ).toLocal();
+
+	// 		startDateTime = DateTime.fromISO(event.start.date).toLocal();
+	// 	}
+
+	// 	// Обрабатываем конец события
+	// 	if (event.end.dateTime) {
+	// 		endDateTime = DateTime.fromISO(
+	// 			event.end.dateTime,
+	// 			// { zone: 'UTC' }
+	// 			{ zone: event.end.timeZone || 'UTC' }
+	// 		).toLocal();
+	// 	} else if (event.end.date) {
+	// 		// endDateTime = DateTime.fromISO(event.end.date, {
+	// 		// 	zone: 'UTC',
+	// 		// }).toLocal();
+	// 		endDateTime = DateTime.fromISO(event.end.date).toLocal();
+	// 	}
+
+	// 	// Возвращаем объект события с локальными датами
+	// 	return {
+	// 		id: event.id,
+	// 		summary: event.summary || 'Без названия',
+	// 		start: startDateTime
+	// 			? startDateTime.toFormat('yyyy-MM-dd HH:mm:ss') // Преобразование в строку
+	// 			: event.start,
+	// 		end: endDateTime
+	// 			? endDateTime.toFormat('yyyy-MM-dd HH:mm:ss') // Преобразование в строку
+	// 			: event.end,
+	// 	};
+	// };
+
 	const fetchTasksForAllLists = async () => {
 		// setLoading(true);
 		setError(null);
@@ -247,62 +300,6 @@ export const useGoogleAuth = () => {
 		}
 	};
 
-	// const fetchEventsForAllCalendarLists = async () => {
-	// 	// setError(null);
-	// 	const calendarListWithEvents: CalendarListWithEvents[] = [];
-
-	// 	try {
-	// 		for (const calendarList of userCalendarLists) {
-	// 			const response = await apiCalendar
-	// 				.listUpcomingEvents(999, calendarList.id)
-	// 				.then(({ result }: any) => {
-	// 					console.log(response);
-	// 				});
-	// 		}
-	// 	} catch (err: any) {}
-
-	// 	// apiCalendar
-	// 	// 	.listUpcomingEvents(999, calendarId)
-	// 	// 	.then(({ result }: any) => {
-	// 	// 		console.log(result.items);
-	// 	// 	});
-	// };
-
-	// const fetchEventsForAllCalendarLists = async () => {
-	// 	try {
-	// 		const calendarListWithEvents: CalendarListWithEvents[] = [];
-
-	// 		for (const calendarList of userCalendarLists) {
-	// 			const response = await apiCalendar.listUpcomingEvents(
-	// 				999,
-	// 				calendarList.id
-	// 			);
-	// 			if (response && response.result && response.result.items) {
-	// 				calendarListWithEvents.push({
-	// 					id: calendarList.id,
-	// 					title: calendarList.title,
-	// 					events: response.result.items.map((event: any) => ({
-	// 						id: event.id,
-	// 						summary: event.summary,
-	// 						start: event.start,
-	// 						end: event.end,
-	// 					})),
-	// 				});
-	// 			} else {
-	// 				console.warn(
-	// 					`No events found for calendar ID: ${calendarList.id}`
-	// 				);
-	// 			}
-	// 		}
-	// 		// Store or use calendarListWithEvents as needed
-	// 		// console.log(calendarListWithEvents);
-	// 		setAllEvents(calendarListWithEvents);
-	// 	} catch (err) {
-	// 		console.error('Error fetching events for all calendar lists:', err);
-	// 		setError('Failed to load calendar events. Please try again later.');
-	// 	}
-	// };
-
 	const fetchEventsForAllCalendarLists = async () => {
 		try {
 			const calendarListWithEvents: CalendarListWithEvents[] = [];
@@ -318,8 +315,7 @@ export const useGoogleAuth = () => {
 					999,
 					calendarList.id
 				);
-
-				// console.log(upcomingResponse);
+				// console.log(JSON.stringify(upcomingResponse));
 
 				// Отримуємо завершені події (за останній рік або будь-який інший період)
 				const completedResponse = await apiCalendar.listEvents({
@@ -332,27 +328,26 @@ export const useGoogleAuth = () => {
 				});
 
 				const allEvents = [];
-
 				// Додаємо майбутні події, якщо вони є
 				if (
 					upcomingResponse &&
 					upcomingResponse.result &&
 					upcomingResponse.result.items
 				) {
+					// console.log(JSON.stringify(upcomingResponse));
 					allEvents.push(
-						...upcomingResponse.result.items.map((event: any) => ({
-							id: event.id,
-							summary: event.summary,
-							start: event.start,
-							end: event.end,
-						}))
+						// ...upcomingResponse.result.items.map((event: any) => {
+						...upcomingResponse.result.items.map(
+							(event: FetchedEvent) => {
+								return formatEventToLocalTime(event);
+							}
+						)
 					);
 				} else {
 					console.warn(
 						`No upcoming events found for calendar ID: ${calendarList.id}`
 					);
 				}
-
 				// Додаємо завершені події, якщо вони є
 				if (
 					completedResponse &&
@@ -360,12 +355,11 @@ export const useGoogleAuth = () => {
 					completedResponse.result.items
 				) {
 					allEvents.push(
-						...completedResponse.result.items.map((event: any) => ({
-							id: event.id,
-							summary: event.summary,
-							start: event.start,
-							end: event.end,
-						}))
+						...completedResponse.result.items.map(
+							(event: FetchedEvent) => {
+								return formatEventToLocalTime(event);
+							}
+						)
 					);
 				} else {
 					console.warn(
@@ -373,7 +367,54 @@ export const useGoogleAuth = () => {
 					);
 				}
 
+				// Конвертация времени всех событий в локальное время
+
+				// const eventsWithLocalTimes = allEvents.map((event: any) => {
+				// 	let startDateTime;
+				// 	let endDateTime; // Исправлено, теперь отдельная переменная для endDateTime
+
+				// 	// Преобразуем дату и время начала события в локальное время
+				// 	if (event.start.dateTime) {
+				// 		startDateTime = DateTime.fromISO(event.start.dateTime, {
+				// 			zone: 'UTC',
+				// 		}).toLocal();
+				// 	} else if (event.start.date) {
+				// 		startDateTime = DateTime.fromISO(event.start.date, {
+				// 			zone: 'UTC',
+				// 		}).toLocal();
+				// 	}
+
+				// 	// Преобразуем дату и время конца события в локальное время
+				// 	if (event.end.dateTime) {
+				// 		endDateTime = DateTime.fromISO(event.end.dateTime, {
+				// 			zone: 'UTC',
+				// 		}).toLocal();
+				// 	} else if (event.end.date) {
+				// 		endDateTime = DateTime.fromISO(event.end.date, {
+				// 			zone: 'UTC',
+				// 		}).toLocal();
+				// 	}
+
+				// 	return {
+				// 		...event,
+				// 		start: startDateTime
+				// 			? startDateTime.toFormat('yyyy-MM-dd HH:mm:ss') // Форматируем в строку с датой и временем
+				// 			: event.start,
+				// 		end: endDateTime
+				// 			? endDateTime.toFormat('yyyy-MM-dd HH:mm:ss') // Форматируем в строку с датой и временем
+				// 			: event.end,
+				// 	};
+				// });
+
 				// Зберігаємо всі події для конкретного календаря
+
+				// if (eventsWithLocalTimes.length > 0) {
+				// 	calendarListWithEvents.push({
+				// 		id: calendarList.id,
+				// 		title: calendarList.title,
+				// 		events: eventsWithLocalTimes,
+				// 	});
+				// }
 				if (allEvents.length > 0) {
 					calendarListWithEvents.push({
 						id: calendarList.id,

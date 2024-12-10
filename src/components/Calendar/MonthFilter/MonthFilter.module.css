@@ -1,18 +1,40 @@
 .month {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+	background-color: #18181b;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
 }
 
 .month__title {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #fff;
+	text-align: center;
+	color: #fff;
+	font-family: 'Inter', serif;
+	font-weight: 400;
+	font-size: 30px;
+	line-height: 1;
 }
-
+.month__title::first-letter {
+	text-transform: uppercase;
+}
+.month__title span {
+	color: #ef4444;
+	margin-left: 8px;
+	line-height: 1;
+}
 .month__actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
 }
 .month__actions-btn {
-    width: 8px;
-    height: 12px;
+	width: 14px;
+	height: 22px;
+	background-color: transparent;
+}
+.month__actions-btn svg path {
+	transition: all 0.3s ease;
+}
+.month__actions-btn:hover svg path {
+	fill: #3b82f6;
 }

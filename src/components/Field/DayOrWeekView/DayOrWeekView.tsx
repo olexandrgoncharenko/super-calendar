@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import styles from './DayOrWeekView.module.css';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
@@ -6,24 +6,10 @@ import { getDatesForWeek } from '../../../utils/getDatesForWeek';
 import { useAuth } from '../../../context/useAuth';
 
 import FieldHeader from '../../FieldHeader.tsx/FieldHeader';
-// import { useCalendarEvents } from '../../../hooks/useCalendarEvents';
+import { CalendarEvent } from '../../../types/CalendarEvent';
+import { DayEventGrid } from '../../DayEventGrid/DayEventGrid';
 
-// import { TaskList } from '../../../hooks/useGoogleAuth';
-// import { json } from 'stream/consumers';
-
-// interface TaskList {
-// 	id: string;
-// 	title: string;
-// }
-
-// import {
-// 	RootState,
-// 	// AppDispatch,
-// 	// toggleTaskList,
-// 	// toggleCalendarList,
-// 	// initializeSelectedTaskLists,
-// 	// initializeSelectedCalendarLists,
-// } from './../../../store';
+import { TimeSlots } from '../../TimeSlots/TimeSlots';
 
 const timeSlots = [
 	'00:00-01:00',
@@ -52,20 +38,6 @@ const timeSlots = [
 	'23:00-00:00',
 ];
 
-export interface CalendarEvent {
-	id: string;
-	start: {
-		dateTime?: string; // для подій з конкретним часом
-		date?: string; // для подій на весь день
-	};
-	end: {
-		dateTime?: string;
-		date?: string;
-	};
-	summary: string; // назва події або інший контент
-	// можна додати інші поля, які ви використовуєте
-}
-
 const DayOrWeekView: React.FC = () => {
 	const currentDate = useSelector((state: RootState) => state.currentDate);
 	const view = useSelector((state: RootState) => state.view);
@@ -76,87 +48,107 @@ const DayOrWeekView: React.FC = () => {
 		(state: RootState) => state.selectedCalendarLists
 	);
 
-	console.log(`selectedCalendarLists: ${selectedCalendarLists}`);
+	const tableRef = useRef<HTMLDivElement | null>(null);
+
+	// console.log(`selectedCalendarLists: ${selectedCalendarLists}`);
 
 	const { allTasks, allEvents, isSignedIn } = useAuth();
 
+	// console.log(allEvents);
 	const [fullDayEvents, setFullDayEvents] = useState<CalendarEvent[]>([]);
-	const [timeSlotEvents, setTimesSlotEvents] = useState<CalendarEvent[]>([]);
 
 	// console.log(`fullDayEvents: ${JSON.stringify(fullDayEvents)}`);
-	// console.log(`timeSlotEvents: ${JSON.stringify(timeSlotEvents)}`);
-
-	// console.log(`allTasks: ${JSON.stringify(allTasks)}`);
-
-	// const [allDayEvents, setAllDayEvents] = useState([]);
-	// const [eventsWithTime, setEventsWithTime] = useState([]);
-
-	// console.log(allEvents);
 	// console.log(datesForDisplay);
 
+	const [timeSlotEvents, setTimesSlotEvents] = useState<CalendarEvent[]>([]);
+	console.log(timeSlotEvents);
+
 	const filteredEventsByCalendar = (calendars: any) => {
+		// console.log('Запуск функции...');
+
 		if (selectedCalendarLists.length === 0) {
 			console.log('No calendars selected');
+
+			setFullDayEvents([]);
 			return [];
 		}
 
-		let allFilteredEvents: any[] = [];
+		const allFilteredEventsByCalendar = calendars.reduce(
+			(acc: any, calendar: any) => {
+				if (selectedCalendarLists.includes(calendar.id)) {
+					acc.push(...calendar.events); // быстрее, чем concat
+				}
+				return acc;
+			},
+			[]
+		);
 
-		calendars.forEach((calendar: any) => {
-			if (selectedCalendarLists.includes(calendar.id)) {
-				console.log(`Matching calendar found: ${calendar.id}`);
-				allFilteredEvents = allFilteredEvents.concat(calendar.events);
-			}
-		});
+		// console.log(
+		// 	`allFilteredEventsByCalendar: ${JSON.stringify(
+		// 		allFilteredEventsByCalendar
+		// 	)}`
+		// );
 
 		const startDate = new Date(datesForDisplay[0]);
-		const endDate =
-			datesForDisplay.length > 1
-				? new Date(datesForDisplay[datesForDisplay.length - 1])
-				: new Date(startDate);
 
-		// Set end date to 23:59:59 to cover full-day events properly
-		if (datesForDisplay.length === 1) {
-			endDate.setHours(23, 59, 59, 999);
-		}
+		startDate.setHours(0, 0, 0, 0); // добавил
 
-		console.log(`Start date: ${startDate}, End date: ${endDate}`);
+		const endDate = new Date(
+			datesForDisplay[datesForDisplay.length - 1] || startDate
+		);
+		endDate.setHours(23, 59, 59, 999);
+		// console.log(`Start date: ${startDate}, End date: ${endDate}`);
+		const uniqueEventIds = new Set();
 
-		const uniqueEvents: { [key: string]: any } = {};
+		const filteredEventsByDate = allFilteredEventsByCalendar.filter(
+			(event: any) => {
+				// let eventStart = getEventStartDate(event);
+				let eventStart = new Date(event.start);
+				// let eventEnd = getEventEndDate(event);
 
-		const filteredEvents = allFilteredEvents.filter((event: any) => {
-			const eventStart = new Date(
-				event.start.dateTime || event.start.date
-			);
-			const eventEnd = new Date(event.end.dateTime || event.end.date);
+				// console.log(`event start: ${typeof eventStart}`);
+				let eventEnd = new Date(event.end);
 
-			// Ensure the event is unique by ID
-			if (!uniqueEvents[event.id]) {
-				uniqueEvents[event.id] = true;
-
-				// Include events that start before the range but continue into it, or start within the range
-				return eventStart <= endDate && eventEnd >= startDate;
+				if (
+					eventStart &&
+					eventEnd &&
+					eventEnd > startDate &&
+					!uniqueEventIds.has(event.id)
+				) {
+					uniqueEventIds.add(event.id);
+					return eventStart <= endDate && eventEnd >= startDate;
+				}
+				return false;
 			}
-			return false;
-		});
+		);
 
-		// console.log('Filtered Events:', filteredEvents);
+		console.log(
+			`filteredEventsByDate: ${JSON.stringify(filteredEventsByDate)}`
+		);
 
 		const fullDayEvents: any[] = [];
 		const timeSlotEvents: any[] = [];
 
-		filteredEvents.forEach((event: any) => {
+		filteredEventsByDate.forEach((event: any) => {
 			const eventStart = new Date(
-				event.start.dateTime || event.start.date
+				// event.start.dateTime || event.start.date
+				event.start
 			);
-			const eventEnd = new Date(event.end.dateTime || event.end.date);
+			const eventEnd = new Date(event.end);
 
 			const isMultiDayEvent = eventEnd.getDate() !== eventStart.getDate();
 
 			// Full-day or multi-day events
-			if (event.start.date || isMultiDayEvent) {
+			if (
+				// event.start.date ||
+				isMultiDayEvent
+			) {
 				fullDayEvents.push(event);
-			} else if (event.start.dateTime) {
+			} else if (
+				// event.start.dateTime &&
+				!isMultiDayEvent
+			) {
+				//изменил
 				timeSlotEvents.push(event);
 			}
 		});
@@ -165,382 +157,40 @@ const DayOrWeekView: React.FC = () => {
 		setTimesSlotEvents(timeSlotEvents);
 	};
 
-	// const filteredEventsByCalendar = (calendars: any) => {
-	// 	if (selectedCalendarLists.length === 0) {
-	// 		console.log('No calendars selected');
-	// 		return [];
-	// 	}
-
-	// 	// Масив для збереження всіх відфільтрованих подій
-	// 	let allFilteredEvents: any[] = [];
-
-	// 	calendars.forEach((calendar: any) => {
-	// 		// Перевірка, чи календар вибрано
-	// 		if (selectedCalendarLists.includes(calendar.id)) {
-	// 			console.log(`Matching calendar found: ${calendar.id}`);
-
-	// 			// Додаємо всі події з вибраного календаря до загального масиву
-	// 			allFilteredEvents = allFilteredEvents.concat(calendar.events);
-	// 		}
-	// 	});
-
-	// 	const startDate = new Date(datesForDisplay[0]);
-	// 	const startYear = startDate.getFullYear();
-	// 	const startMonth = startDate.getMonth();
-	// 	const startDay = startDate.getDate();
-
-	// 	const endDate = new Date(datesForDisplay[datesForDisplay.length - 1]);
-
-	// 	const endYear = endDate.getFullYear();
-	// 	const endMonth = endDate.getMonth();
-	// 	const endDay = endDate.getDate();
-
-	// 	console.log(`endDate: ${endDate}`);
-	// 	// console.log(`startYear: ${startYear}`);
-	// 	// console.log(`startMonth: ${startMonth}`);
-	// 	// console.log(`startDate: ${startDay}`);
-
-	// 	console.log('Filtered Events:', allFilteredEvents);
-
-	// 	const finalEvents = allFilteredEvents.forEach((event: any) => {
-	// 		// const eventDate = event.start.dateTime || event.start.date; // Виправлено на правильне звернення
-	// 		const eventDate = new Date(
-	// 			event.start.dateTime || event.start.date
-	// 		); // Виправлено на правильне звернення
-	// 		const eventYear = eventDate.getFullYear();
-	// 		const eventMonth = eventDate.getMonth();
-	// 		const eventDay = eventDate.getDate();
-
-	// 		// console.log(eventDay);
-
-	// 		if (
-	// 			eventYear >= startDate.getFullYear() &&
-	// 			eventYear <= endDate.getFullYear()
-	// 		) {
-	// 			console.log(event);
-	// 		}
-
-	// 		// console.log(`event date: ${eventDate}`);
-	// 		// console.log(eventDate);
-
-	// 		// return eventDate; // Повертає значення, але не має сенсу, оскільки forEach не збирає результати
-	// 	});
-	// 	// return allFilteredEvents;
-	// };
-	// Filter events when dependencies (events, calendars) change
-
-	// const filteredEventsByCalendar = (calendars: any) => {
-	// 	if (selectedCalendarLists.length === 0) {
-	// 		console.log('No calendars selected');
-	// 		return [];
-	// 	}
-
-	// 	// Масив для збереження всіх відфільтрованих подій
-	// 	let allFilteredEvents: any[] = [];
-
-	// 	calendars.forEach((calendar: any) => {
-	// 		// Перевірка, чи календар вибрано
-	// 		if (selectedCalendarLists.includes(calendar.id)) {
-	// 			console.log(`Matching calendar found: ${calendar.id}`);
-
-	// 			// Додаємо всі події з вибраного календаря до загального масиву
-	// 			allFilteredEvents = allFilteredEvents.concat(calendar.events);
-	// 		}
-	// 	});
-
-	// 	const startDate = new Date(datesForDisplay[0]);
-	// 	const endDate = new Date(datesForDisplay[datesForDisplay.length - 1]);
-
-	// 	console.log(`Start date: ${startDate}, End date: ${endDate}`);
-
-	// 	// Filtering events within the date range
-	// 	const filteredEvents = allFilteredEvents.filter((event: any) => {
-	// 		const eventDate = new Date(
-	// 			event.start.dateTime || event.start.date
-	// 		); // Ensure correct date handling
-	// 		return eventDate >= startDate && eventDate <= endDate; // Only events within the selected date range
-	// 	});
-
-	// 	console.log('Filtered Events:', filteredEvents);
-	// 	return filteredEvents; // Return the filtered events
-	// };
-
-	// const filteredEventsByCalendar = (calendars: any) => {
-	// 	if (selectedCalendarLists.length === 0) {
-	// 		console.log('No calendars selected');
-	// 		return [];
-	// 	}
-
-	// 	// Масив для збереження всіх відфільтрованих подій
-	// 	let allFilteredEvents: any[] = [];
-
-	// 	calendars.forEach((calendar: any) => {
-	// 		// Перевірка, чи календар вибрано
-	// 		if (selectedCalendarLists.includes(calendar.id)) {
-	// 			console.log(`Matching calendar found: ${calendar.id}`);
-
-	// 			// Додаємо всі події з вибраного календаря до загального масиву
-	// 			allFilteredEvents = allFilteredEvents.concat(calendar.events);
-	// 		}
-	// 	});
-
-	// 	const startDate = new Date(datesForDisplay[0]);
-	// 	const endDate =
-	// 		datesForDisplay.length > 1
-	// 			? new Date(datesForDisplay[datesForDisplay.length - 1])
-	// 			: new Date(startDate); // Якщо вибрано один день, кінцева дата така ж, як і початкова
-
-	// 	// Встановлюємо кінцевий час для одного дня (23:59:59), щоб включити події, які відбуваються пізно ввечері
-	// 	if (datesForDisplay.length === 1) {
-	// 		endDate.setHours(23, 59, 59, 999);
-	// 	}
-
-	// 	console.log(`Start date: ${startDate}, End date: ${endDate}`);
-
-	// 	// Filtering events within the date range
-	// 	const filteredEvents = allFilteredEvents.filter((event: any) => {
-	// 		const eventDate = new Date(
-	// 			event.start.dateTime || event.start.date
-	// 		); // Ensure correct date handling
-	// 		return eventDate >= startDate && eventDate <= endDate; // Only events within the selected date range
-	// 	});
-
-	// 	console.log('Filtered Events:', filteredEvents);
-	// 	return filteredEvents; // Return the filtered events
-	// };
-	// const filteredEventsByCalendar = (calendars: any) => {
-	// 	if (selectedCalendarLists.length === 0) {
-	// 		console.log('No calendars selected');
-	// 		return [];
-	// 	}
-
-	// 	// Масив для збереження всіх відфільтрованих подій
-	// 	let allFilteredEvents: any[] = [];
-
-	// 	calendars.forEach((calendar: any) => {
-	// 		if (selectedCalendarLists.includes(calendar.id)) {
-	// 			console.log(`Matching calendar found: ${calendar.id}`);
-	// 			allFilteredEvents = allFilteredEvents.concat(calendar.events);
-	// 		}
-	// 	});
-
-	// 	const startDate = new Date(datesForDisplay[0]);
-	// 	const endDate =
-	// 		datesForDisplay.length > 1
-	// 			? new Date(datesForDisplay[datesForDisplay.length - 1])
-	// 			: new Date(startDate);
-
-	// 	if (datesForDisplay.length === 1) {
-	// 		endDate.setHours(23, 59, 59, 999);
-	// 	}
-
-	// 	console.log(`Start date: ${startDate}, End date: ${endDate}`);
-
-	// 	const uniqueEvents: { [key: string]: any } = {};
-	// 	const filteredEvents = allFilteredEvents.filter((event: any) => {
-	// 		const eventStartDate = new Date(
-	// 			event.start.dateTime || event.start.date
-	// 		);
-	// 		const eventEndDate = new Date(event.end.dateTime || event.end.date);
-
-	// 		// Проверка на дубляж по id
-	// 		if (!uniqueEvents[event.id]) {
-	// 			uniqueEvents[event.id] = true;
-
-	// 			// Проверка, что событие попадает в текущий диапазон отображаемых дат
-	// 			return (
-	// 				(eventStartDate >= startDate &&
-	// 					eventStartDate <= endDate) ||
-	// 				(eventEndDate >= startDate && eventEndDate <= endDate) ||
-	// 				(eventStartDate <= startDate && eventEndDate >= endDate) // Если событие перекрывает весь диапазон
-	// 			);
-	// 		}
-	// 		return false;
-	// 	});
-
-	// 	console.log('Filtered Events:', filteredEvents);
-
-	// 	const fullDayEvents: any[] = [];
-	// 	const timeSlotEvents: any[] = [];
-
-	// 	filteredEvents.forEach((event: any) => {
-	// 		if (event.start.date) {
-	// 			// Событие на весь день
-	// 			const eventStartDate = new Date(event.start.date);
-	// 			const eventEndDate = new Date(event.end.date);
-
-	// 			// Если событие длится несколько дней
-	// 			for (
-	// 				let d = eventStartDate;
-	// 				d <= eventEndDate;
-	// 				d.setDate(d.getDate() + 1)
-	// 			) {
-	// 				fullDayEvents.push({ ...event, currentDate: new Date(d) });
-	// 			}
-	// 		} else if (event.start.dateTime) {
-	// 			// Событие с конкретным временем
-	// 			timeSlotEvents.push(event);
-	// 		}
-	// 	});
-
-	// 	setFullDayEvents(fullDayEvents);
-	// 	setTimesSlotEvents(timeSlotEvents);
-	// };
-	// const filteredEventsByCalendar = (calendars: any) => {
-	// 	if (selectedCalendarLists.length === 0) {
-	// 		console.log('No calendars selected');
-	// 		return [];
-	// 	}
-
-	// 	// Масив для збереження всіх відфільтрованих подій
-	// 	let allFilteredEvents: any[] = [];
-
-	// 	calendars.forEach((calendar: any) => {
-	// 		// Перевірка, чи календар вибрано
-	// 		if (selectedCalendarLists.includes(calendar.id)) {
-	// 			console.log(`Matching calendar found: ${calendar.id}`);
-
-	// 			// Додаємо всі події з вибраного календаря до загального масиву
-	// 			allFilteredEvents = allFilteredEvents.concat(calendar.events);
-	// 		}
-	// 	});
-
-	// 	const startDate = new Date(datesForDisplay[0]);
-	// 	const endDate =
-	// 		datesForDisplay.length > 1
-	// 			? new Date(datesForDisplay[datesForDisplay.length - 1])
-	// 			: new Date(startDate); // Якщо вибрано один день, кінцева дата така ж, як і початкова
-
-	// 	// Встановлюємо кінцевий час для одного дня (23:59:59), щоб включити події, які відбуваються пізно ввечері
-	// 	if (datesForDisplay.length === 1) {
-	// 		endDate.setHours(23, 59, 59, 999);
-	// 	}
-
-	// 	console.log(`Start date: ${startDate}, End date: ${endDate}`);
-
-	// 	// Створимо об'єкт для збереження унікальних подій
-	// 	const uniqueEvents: { [key: string]: any } = {};
-
-	// 	// Фільтрація подій у межах вибраного діапазону дат
-	// 	const filteredEvents = allFilteredEvents.filter((event: any) => {
-	// 		const eventDate = new Date(
-	// 			event.start.dateTime || event.start.date
-	// 		);
-
-	// 		// Перевірка на дублювання по id події
-	// 		if (!uniqueEvents[event.id]) {
-	// 			uniqueEvents[event.id] = true; // Позначаємо подію як оброблену
-
-	// 			// Повертаємо лише події у межах вибраного діапазону
-	// 			return eventDate >= startDate && eventDate <= endDate;
-	// 		} else {
-	// 			// Якщо подія вже була оброблена, пропускаємо її
-	// 			return false;
-	// 		}
-	// 	});
-
-	// 	console.log('Filtered Events:', filteredEvents);
-	// 	// return filteredEvents; // Повертаємо відфільтровані події
-
-	// 	const fullDayEvents: any[] = [];
-	// 	const timeSlotEvents: any[] = [];
-
-	// 	// filteredEvents.forEach((event: any) => {
-	// 	// 	const eventDate = new Date(
-	// 	// 		event.start.dateTime || event.start.date
-	// 	// 	);
-	// 	// 	// const eventDate = new Date(
-	// 	// 	// 	event.start.dateTime || event.start.date
-	// 	// 	// );
-
-	// 	// 	// if (event.start.date || event.end.dateTime > eventDate) {
-	// 	// 	// 	fullDayEvents.push(event);
-	// 	// 	// }
-	// 	// 	// // if (
-	// 	// 	// // 	//event.start.date ||
-	// 	// 	// // 	event.end.dateTime > eventDate
-	// 	// 	// // )
-	// 	// 	// //  {
-	// 	// 	// // 	fullDayEvents.push(event);
-	// 	// 	// // }
-	// 	// 	// else if (
-	// 	// 	// 	event.start.dateTime
-	// 	// 	// 	// &&
-	// 	// 	// 	// eventDate >= startDate &&
-	// 	// 	// 	// eventDate <= endDate
-	// 	// 	// ) {
-	// 	// 	// 	timeSlotEvents.push(event);
-	// 	// 	// }
-
-	// 	// 	if (
-	// 	// 		event.start.date ||
-	// 	// 		(event.end.dateTime && event.end.dateTime > eventDate)
-	// 	// 	) {
-	// 	// 		fullDayEvents.push(event);
-	// 	// 	} else if (event.start.dateTime) {
-	// 	// 		timeSlotEvents.push(event);
-	// 	// 	}
-
-	// 	// 	// if (event.start.date) {
-	// 	// 	// 	fullDayEvents.push(event);
-	// 	// 	// } else if (
-	// 	// 	// 	event.start.dateTime
-	// 	// 	// 	// &&
-	// 	// 	// 	// eventDate >= startDate &&
-	// 	// 	// 	// eventDate <= endDate
-	// 	// 	// ) {
-	// 	// 	// 	timeSlotEvents.push(event);
-	// 	// 	// }
-	// 	// });
-
-	// 	// console.log(`fullDayEvents: ${JSON.stringify(fullDayEvents)}`);
-	// 	// console.log(`timeSlotEvents: ${JSON.stringify(timeSlotEvents)}`);
-
-	// 	filteredEvents.forEach((event: any) => {
-	// 		const eventStart = new Date(
-	// 			event.start.dateTime || event.start.date
-	// 		);
-	// 		const eventEnd = new Date(event.end.dateTime || event.end.date);
-
-	// 		const isMultiDayEvent = eventEnd.getDate() !== eventStart.getDate();
-
-	// 		if (event.start.date || isMultiDayEvent) {
-	// 			fullDayEvents.push(event); // Мультидневные события или события на весь день
-	// 		} else if (event.start.dateTime) {
-	// 			timeSlotEvents.push(event); // События с конкретным временем в пределах одного дня
-	// 		}
-	// 	});
-	// 	setFullDayEvents(fullDayEvents);
-	// 	setTimesSlotEvents(timeSlotEvents);
-	// };
-
-	// const filteredEventsByCalendar = (events: any[]) => {
-	// 	const allDayEvents: any[] = [];
-	// 	const timeSlotEvents: any[] = [];
-
-	// 	events.forEach((event) => {
-	// 		if (event.start.date && event.end.date) {
-	// 			// Це подія на весь день
-	// 			allDayEvents.push(event);
-	// 		} else if (event.start.dateTime && event.end.dateTime) {
-	// 			// Це подія з конкретним часом
-	// 			timeSlotEvents.push(event);
-	// 		}
-	// 	});
-
-	// 	console.log(`allDayEvents: ${allDayEvents}`);
-	// 	console.log(`timeSlotEvents: ${timeSlotEvents}`);
-
-	// 	return { allDayEvents, timeSlotEvents };
-	// };
+	const getEventStartDate = (event: any): Date | null => {
+		if (event.start.dateTime) {
+			return event.start.dateTime;
+		} else if (event.start.date) {
+			const date = new Date(event.start.date);
+			date.setUTCHours(0, 0, 0, 0); // Начало дня в UTC
+			return date;
+		}
+		return null;
+	};
+
+	const getEventEndDate = (event: any): Date | null => {
+		if (event.end.dateTime) {
+			return event.end.dateTime;
+		} else if (event.end.date) {
+			const date = new Date(event.end.date);
+			date.setUTCHours(23, 59, 59, 999); // Конец дня в UTC
+			return date;
+		}
+		return null;
+	};
 
 	useEffect(() => {
-		if (isSignedIn && allEvents.length > 0) {
+		if (
+			isSignedIn
+			// &&
+			// selectedCalendarLists.length > 0
+			//  && allEvents.length > 0
+		) {
 			filteredEventsByCalendar(allEvents);
 		} else {
-			// console.log('Waiting for calendar events or sign-in...');
+			console.log('Waiting for  sign-in...');
 		}
-	}, [allEvents, selectedCalendarLists, isSignedIn, datesForDisplay]);
+	}, [allEvents, selectedCalendarLists, isSignedIn, datesForDisplay, view]);
 
 	useEffect(() => {
 		const updatedDates =
@@ -548,409 +198,146 @@ const DayOrWeekView: React.FC = () => {
 		setDatesForDisplay(updatedDates);
 	}, [view, currentDate]);
 
+	const calculateScrollPosition = (
+		timeSlotEvents: CalendarEvent[]
+	): number => {
+		if (!timeSlotEvents || timeSlotEvents.length === 0) return 7 * 68; // Если нет событий, прокрутка на 7:00
+
+		const cellHeight = 48; // Высота ячейки времени в пикселях
+
+		// Находим самое раннее событие
+		const earliestEvent = timeSlotEvents.reduce((earliest, event) => {
+			const eventStart = new Date(event.start);
+			const earliestStart = new Date(earliest.start);
+
+			if (isNaN(eventStart.getTime())) {
+				console.warn(`Invalid event time: ${event.start}`);
+				return earliest;
+			}
+
+			// Логируем сравнение времени начала события с самым ранним событием
+			console.log(
+				`Comparing event start: ${eventStart} with earliest start: ${earliestStart}`
+			);
+
+			return eventStart.getTime() < earliestStart.getTime()
+				? event
+				: earliest;
+		}, timeSlotEvents[0]);
+
+		// Логируем время начала самого раннего события
+		console.log('Earliest event start time:', earliestEvent.start);
+
+		const eventStartHour = new Date(earliestEvent.start).getHours();
+
+		// Если событие начинается позже 7:00, прокрутка на 7:00, если раньше — на сам час события
+		return eventStartHour >= 7
+			? 7 * cellHeight
+			: eventStartHour * cellHeight;
+	};
+	// useEffect(() => {
+	// 	if (!timeSlotEvents || timeSlotEvents.length === 0) {
+	// 		console.log('No events to display, scrolling to top');
+	// 		if (tableRef.current) {
+	// 			tableRef.current.scrollTop = 7 * 68; // Сбрасываем прокрутку на верх
+	// 		}
+	// 		return;
+	// 	}
+
+	// 	if (tableRef.current) {
+	// 		const cellHeight = 68; // Height of one time slot cell in pixels
+	// 		let scrollPosition = 7 * cellHeight; // Default scroll position at 7:00 AM
+
+	// 		console.log('Initial scroll position (7:00 AM):', scrollPosition);
+
+	// 		const earliestEvent = timeSlotEvents.reduce((earliest, event) => {
+	// 			const eventStart = new Date(event.start);
+	// 			const earliestStart = new Date(earliest.start);
+
+	// 			if (isNaN(eventStart.getTime())) {
+	// 				console.warn(`Invalid event time: ${event.start}`);
+	// 				return earliest;
+	// 			}
+
+	// 			// Log comparison of event start times
+	// 			console.log(
+	// 				`Comparing event start: ${eventStart} with earliest start: ${earliestStart}`
+	// 			);
+
+	// 			return eventStart.getHours() < earliestStart.getHours()
+	// 				? event
+	// 				: earliest;
+	// 		}, timeSlotEvents[0]);
+
+	// 		// Log the earliest event's start time
+	// 		console.log('Earliest event start time:', earliestEvent.start);
+
+	// 		const eventStartHour = new Date(earliestEvent.start).getHours();
+
+	// 		if (eventStartHour >= 7) {
+	// 			scrollPosition = 7 * cellHeight;
+	// 		} else {
+	// 			scrollPosition = eventStartHour * cellHeight;
+	// 		}
+
+	// 		// Log the final scroll position after determining the earliest event
+	// 		console.log('Calculated scroll position:', scrollPosition);
+
+	// 		// Set the scroll position with a slight delay
+	// 		setTimeout(() => {
+	// 			if (tableRef.current) {
+	// 				console.log('Setting scroll position to:', scrollPosition);
+	// 				tableRef.current!.scrollTop = scrollPosition;
+	// 			}
+	// 		}, 0);
+	// 	}
+	// }, [timeSlotEvents, datesForDisplay]);
+
+	useEffect(() => {
+		if (!timeSlotEvents || timeSlotEvents.length === 0) {
+			console.log('No events to display, scrolling to top');
+			if (tableRef.current) {
+				tableRef.current.scrollTop = 7 * 48; // Сбрасываем прокрутку на 7:00
+			}
+			return;
+		}
+
+		if (tableRef.current) {
+			const scrollPosition = calculateScrollPosition(timeSlotEvents);
+
+			// Логируем итоговую позицию прокрутки
+			console.log('Calculated scroll position:', scrollPosition);
+
+			// Устанавливаем прокрутку с небольшой задержкой
+			setTimeout(() => {
+				if (tableRef.current) {
+					console.log('Setting scroll position to:', scrollPosition);
+					tableRef.current!.scrollTop = scrollPosition;
+				}
+			}, 0);
+		}
+	}, [timeSlotEvents, datesForDisplay]);
+
 	return (
 		<div>
 			<div className={styles.week}>
-				{/* <div className={styles.header}>
-					<div className={styles.timeColumn}></div>
-					<div className={styles.weekdays}>
-						{datesForDisplay.map((dateStr, index) => {
-							const date = new Date(dateStr);
-							const daysOfWeek = [
-								'Пн',
-								'Вт',
-								'Ср',
-								'Чт',
-								'Пт',
-								'Сб',
-								'Вс',
-							];
-							const dayOfWeek =
-								daysOfWeek[(date.getDay() + 6) % 7];
-							const dayOfMonth = date.getDate();
-
-							return (
-								<div
-									key={index}
-									className={styles.dayContainer}
-								>
-									<div className={styles.dayOfWeek}>
-										{dayOfWeek}
-									</div>
-									<div className={styles.dayOfMonth}>
-										{dayOfMonth}
-									</div>
-								</div>
-							);
-						})}
-					</div>
-				</div> */}
-
 				<FieldHeader
 					dates={datesForDisplay}
 					fullDayEvents={fullDayEvents}
 				/>
-
-				<div className={styles.body}>
-					<div className={styles.timeColumn}>
-						{timeSlots.map((time, index) => (
-							<div key={index} className={styles.timeSlot}>
-								{time}
-							</div>
-						))}
-					</div>
-
-					{/* {datesForDisplay.map((dateStr, dateIndex) => {
-						const date = new Date(dateStr);
-
-						return (
-							<div key={dateIndex} className={styles.dayColumn}>
-								{/* Full-day events */}
-					{/* <div className={styles.fullDayEvents}>
-									{fullDayEvents
-										.filter((event) => {
-											const eventDate = new Date(
-												event.start.date
-											);
-											return (
-												eventDate.toDateString() ===
-												date.toDateString()
-											);
-										})
-										.map((event) => (
-											<div
-												key={event.id}
-												className={styles.fullDayEvent}
-											>
-												{event.summary}
-											</div>
-										))}
-								</div> */}
-
-					{/* Time slot events */}
-					{/* {timeSlots.map((slot, slotIndex) => {
-									const timeSlotEvent = timeSlotEvents.find(
-										(event) => {
-											const eventDateTime = new Date(
-												event.start.dateTime || ''
-											);
-											return (
-												eventDateTime.toDateString() ===
-													date.toDateString() &&
-												eventDateTime.getHours() ===
-													slotIndex
-											);
-										}
-									);
-
-									return (
-										<div
-											key={slotIndex}
-											className={styles.timeSlotEvent}
-										>
-											{timeSlotEvent
-												? timeSlotEvent.summary
-												: ''}
-										</div>
-									);
-								})} */}
-					{/* </div>
-						); */}
-					{/* })} */}
+				<div
+					className={`${styles.container} ${styles['custom-scrollbar']}`}
+					ref={tableRef}
+				>
+					<TimeSlots />
+					<DayEventGrid
+						dates={datesForDisplay}
+						timeSlotEvents={timeSlotEvents}
+					/>
 				</div>
 			</div>
 		</div>
 	);
-
-	// return (
-	// 	<div className={styles.week}>
-	// 		<div className={styles.header}>
-	// 			<div className={styles.timeHeader}></div>
-	// 			<div className={styles.weekdays}>
-	// 				{datesForDisplay.map((dateStr, index) => {
-	// 					const date = new Date(dateStr);
-	// 					const daysOfWeek = [
-	// 						'Пн',
-	// 						'Вт',
-	// 						'Ср',
-	// 						'Чт',
-	// 						'Пт',
-	// 						'Сб',
-	// 						'Вс',
-	// 					];
-	// 					const dayOfWeek = daysOfWeek[(date.getDay() + 6) % 7];
-	// 					const dayOfMonth = date.getDate();
-
-	// 					const dayEvents = fullDayEvents.filter(
-	// 						(event) =>
-	// 							new Date(event.start.date).toDateString() ===
-	// 							date.toDateString()
-	// 					);
-
-	// 					const timeSlotEventsFinish = timeSlotEvents.filter(
-	// 						(event) =>
-	// 							new Date(
-	// 								event.start.dateTime
-	// 							).toDateString() === date.toDateString()
-	// 					);
-
-	// 					return (
-	// 						<div key={index} className={styles.dayContainer}>
-	// 							<div className={styles.dayOfWeek}>
-	// 								{dayOfWeek}
-	// 							</div>
-	// 							<div className={styles.dayOfMonth}>
-	// 								{dayOfMonth}
-	// 							</div>
-	// 							<div className={styles.eventsContainer}>
-	// 								{dayEvents.map((event, idx) => (
-	// 									<div
-	// 										key={idx}
-	// 										className={styles.fullDayEvent}
-	// 									>
-	// 										{event.summary}
-	// 									</div>
-	// 								))}
-	// 								{timeSlots.map((slot, idx) => (
-	// 									<div
-	// 										key={idx}
-	// 										className={styles.timeSlot}
-	// 									>
-	// 										{slot}
-	// 										{timeSlotEventsFinish
-	// 											.filter((event) => {
-	// 												const eventTime = new Date(
-	// 													event.start.dateTime!
-	// 												).getHours();
-	// 												const [startHour] = slot
-	// 													.split('-')[0]
-	// 													.split(':');
-	// 												return (
-	// 													eventTime ===
-	// 													parseInt(startHour)
-	// 												);
-	// 											})
-	// 											.map((event, idx) => (
-	// 												<div
-	// 													key={idx}
-	// 													className={
-	// 														styles.timeSlotEvent
-	// 													}
-	// 												>
-	// 													{event.summary}
-	// 												</div>
-	// 											))}
-	// 									</div>
-	// 								))}
-	// 							</div>
-	// 						</div>
-	// 					);
-	// 				})}
-	// 			</div>
-	// 		</div>
-	// 	</div>
-	// );
 };
-
-// 	return (
-// 		<div className={styles.week}>
-// 			<div className={styles.header}>
-// 				<div className={styles.timeHeader}></div>
-// 				<div className={styles.weekdays}>
-// 					{datesForDisplay.map((dateStr, index) => {
-// 						const date = new Date(dateStr);
-// 						const daysOfWeek = [
-// 							'Пн',
-// 							'Вт',
-// 							'Ср',
-// 							'Чт',
-// 							'Пт',
-// 							'Сб',
-// 							'Вс',
-// 						];
-// 						const dayOfWeek = daysOfWeek[(date.getDay() + 6) % 7]; // Щоб почати тиждень з понеділка
-// 						const dayOfMonth = date.getDate(); // Відображаємо число
-
-// 						// Фільтрація подій, які тривають увесь день
-// 						const dayEvents = fullDayEvents.filter((event) => {
-// 							if (event.start.date) {
-// 								const eventDate = new Date(event.start.date);
-// 								return (
-// 									eventDate.toDateString() ===
-// 									date.toDateString()
-// 								);
-// 							}
-// 							return false; // Якщо date не визначено, пропустити подію
-// 						});
-
-// 						// Фільтрація подій, які мають часові проміжки
-// 						const timeSlotEventsFinish = timeSlotEvents.filter(
-// 							(event) => {
-// 								if (event.start.dateTime) {
-// 									const eventDateTime = new Date(
-// 										event.start.dateTime
-// 									);
-// 									return (
-// 										eventDateTime.toDateString() ===
-// 										date.toDateString()
-// 									);
-// 								}
-// 								return false; // Якщо dateTime не визначено, пропустити подію
-// 							}
-// 						);
-
-// 						return (
-// 							<div key={index} className={styles.dayContainer}>
-// 								<div className={styles.dayOfWeek}>
-// 									{dayOfWeek}
-// 								</div>
-// 								<div className={styles.dayOfMonth}>
-// 									{dayOfMonth}
-// 								</div>
-// 								<div className={styles.eventsContainer}>
-// 									{/* Відображення подій, які тривають увесь день */}
-// 									{dayEvents.map((event) => (
-// 										<div
-// 											key={event.id}
-// 											className={styles.event}
-// 										>
-// 											{event.summary}{' '}
-// 											{/* Відображаємо назву події */}
-// 										</div>
-// 									))}
-// 								</div>
-// 								{timeSlotEventsFinish.map((event: any) => (
-// 									<div
-// 										key={event.id}
-// 										className={styles.event}
-// 									>
-// 										{event.summary} at{' '}
-// 										{new Date(
-// 											event.start.dateTime
-// 										).toLocaleTimeString()}
-// 									</div>
-// 								))}
-// 							</div>
-// 						);
-// 					})}
-// 				</div>
-// 			</div>
-// 		</div>
-// 	);
-// };
 
 export default DayOrWeekView;
-
-const handleCellClick = (date: string, time: string) => {
-	console.log(`Selected date: ${date}, time: ${time}`);
-};
-
-// return (
-// 	<div className={styles.week}>
-// 		<div className={styles.header}>
-// 			<div className={styles.timeHeader}></div>
-// 			<div className={styles.weekdays}>
-// 				{datesForDisplay.map((dateStr, index) => {
-// 					const date = new Date(dateStr);
-// 					const daysOfWeek = [
-// 						'Пн',
-// 						'Вт',
-// 						'Ср',
-// 						'Чт',
-// 						'Пт',
-// 						'Сб',
-// 						'Вс',
-// 					];
-// 					const dayOfWeek = daysOfWeek[(date.getDay() + 6) % 7]; // Щоб почати тиждень з понеділка
-// 					const dayOfMonth = date.getDate(); // Відображаємо число
-
-// 					// Фільтрація подій, які тривають увесь день
-// 					const dayEvents = fullDayEvents.filter((event) => {
-// 						// Перевірка на наявність date
-// 						if (event.start.date) {
-// 							const eventDate = new Date(event.start.date);
-// 							return (
-// 								eventDate.toDateString() ===
-// 								date.toDateString()
-// 							); // Порівнюємо дати
-// 						}
-// 						return false; // Якщо date не визначено, пропустити подію
-// 					});
-
-// 					return (
-// 						<div key={index} className={styles.dayContainer}>
-// 							<div className={styles.dayOfWeek}>
-// 								{dayOfWeek}
-// 							</div>
-// 							<div className={styles.dayOfMonth}>
-// 								{dayOfMonth}
-// 							</div>
-// 							<div className={styles.eventsContainer}>
-// 								{dayEvents.map((event) => (
-// 									<div
-// 										key={event.id}
-// 										className={styles.event}
-// 									>
-// 										{event.summary}{' '}
-// 										{/* Відображаємо назву події */}
-// 									</div>
-// 								))}
-// 							</div>
-// 						</div>
-// 					);
-// 				})}
-// 			</div>
-// 		</div>
-// 	</div>
-// );
-
-// <div className={styles.week}>
-// 	<div className={styles.header}>
-// 		<div className={styles.timeHeader}></div>
-// 		<div className={styles.weekdays}>
-// 			{datesForDisplay.map((dateStr, index) => {
-// 				const date = new Date(dateStr);
-// 				const daysOfWeek = [
-// 					'Пн',
-// 					'Вт',
-// 					'Ср',
-// 					'Чт',
-// 					'Пт',
-// 					'Сб',
-// 					'Вс',
-// 				];
-// 				const dayOfWeek = daysOfWeek[(date.getDay() + 6) % 7]; // Щоб почати тиждень з понеділка
-// 				return <div key={index}>{dayOfWeek}</div>;
-// 			})}
-// 		</div>
-// 	</div>
-// 	<div className={styles.body}>
-// 		{timeSlots.map((timeSlot, rowIndex) => (
-// 			<div key={rowIndex} className={styles.row}>
-// 				<div className={styles.time}>{timeSlot}</div>
-// 				<div className={styles.cells}>
-// 					{datesForDisplay.map((dateStr, colIndex) => {
-// 						const date = new Date(dateStr);
-// 						const formattedDate = date.toLocaleDateString();
-
-// 						return (
-// 							<div
-// 								key={colIndex}
-// 								className={styles.cell}
-// 								onClick={() =>
-// 									handleCellClick(
-// 										formattedDate,
-// 										timeSlot
-// 									)
-// 								}
-// 							>
-// 								{formattedDate}
-// 							</div>
-// 						);
-// 					})}
-// 				</div>
-// 			</div>
-// 		))}
-// 	</div>
-// </div>
-// );

@@ -2,12 +2,17 @@ import { configureStore } from '@reduxjs/toolkit';
 
 export type ViewType = 'day' | 'week' | 'month' | 'year';
 
+type ActiveCalendarMonthAndYear = {
+	year: number;
+	month: number;
+};
+
 type State = {
 	currentDate: string;
 	view: ViewType;
-	//
 	selectedTaskLists: string[];
 	selectedCalendarLists: string[];
+	activeCalendarViewMonthAndYear: ActiveCalendarMonthAndYear; // Отображаемый месяц и год
 };
 type SetCurrentDate = {
 	type: 'SET_CURRENT_DATE';
@@ -38,34 +43,35 @@ type InitializeSelectedCalendarLists = {
 	payload: string[];
 };
 
+type SetActiveCalendarMonthAndYear = {
+	type: 'SET_ACTIVE_CALENDAR_MONTH_AND_YEAR';
+	payload: ActiveCalendarMonthAndYear;
+};
+
 type Action =
 	| SetCurrentDate
 	| SetView
 	| ToggleTaskList
 	| ToggleCalendarList
 	| InitializeSelectedTaskLists
-	| InitializeSelectedCalendarLists;
+	| InitializeSelectedCalendarLists
+	| SetActiveCalendarMonthAndYear;
 
 let initialCurrentDate = new Date();
-// initialCurrentDate.setUTCHours(0, 0, 0, 0);
 initialCurrentDate.setUTCHours(0, 0, 0, 0);
-
-// console.log(`initialCurrentDate: ${initialCurrentDate}`);
 const finalInitialDate = initialCurrentDate.toISOString();
-
-// console.log(`finalInitialDate: ${finalInitialDate}`);
 
 const initialState: State = {
 	currentDate: finalInitialDate,
 	view: 'week',
 	selectedTaskLists: [],
 	selectedCalendarLists: [],
+	activeCalendarViewMonthAndYear: {
+		year: new Date().getFullYear(),
+		month: new Date().getMonth(),
+	},
 };
 
-// export const setCurrentDate = (date: Date) => ({
-// 	type: 'SET_CURRENT_DATE',
-// 	payload: date.toISOString(),
-// });
 export const setCurrentDate = (date: string) => ({
 	type: 'SET_CURRENT_DATE',
 	payload: date,
@@ -94,6 +100,13 @@ export const toggleTaskList = (taskListId: string) => ({
 export const toggleCalendarList = (calendarListId: string) => ({
 	type: 'TOGGLE_CALENDAR_LIST',
 	payload: calendarListId,
+});
+
+export const setActiveCalendarMonthAndYear = (
+	date: ActiveCalendarMonthAndYear
+) => ({
+	type: 'SET_ACTIVE_CALENDAR_MONTH_AND_YEAR',
+	payload: date,
 });
 
 const reducer = (state = initialState, action: Action): State => {
@@ -143,6 +156,9 @@ const reducer = (state = initialState, action: Action): State => {
 				...state,
 				selectedCalendarLists: action.payload,
 			};
+
+		case 'SET_ACTIVE_CALENDAR_MONTH_AND_YEAR':
+			return { ...state, activeCalendarViewMonthAndYear: action.payload };
 		default:
 			return state;
 	}

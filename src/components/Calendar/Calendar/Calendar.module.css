@@ -1,37 +1,48 @@
 .calendar {
+	margin-bottom: 16px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	font-family: 'Inter', serif;
+	font-size: 16px;
+	font-weight: 600;
 }
-
 .weekdays,
 .days {
 	display: grid;
 	grid-template-columns: repeat(7, 1fr);
-	gap: 5px;
-	color: #fff;
 }
-
+.weekdays {
+	color: #3b82f6;
+}
 .weekdays div,
-.days div {
-	width: 40px;
-	height: 40px;
+.day {
+	width: 38px;
+	height: 38px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
-.currentMonth {
-	background-color: blue;
-}
-
-.otherMonth {
-	background-color: #f8d7da;
-}
-
 .day {
 	cursor: pointer;
+	border-radius: 50%;
+	transition: all 0.3s ease;
+	color: #71717a;
 }
-.activeDay {
-	background-color: yellow;
+.day.currentMonth,
+.day.otherMonth.today {
+	color: #fff;
+}
+.day.activeDay,
+.day.activeDay.today {
+	background-color: #3b82f6;
+}
+
+.day.today {
+	background-color: #71717a;
+}
+.day:hover {
+	background-color: #3b82f6;
+	color: #fff;
 }

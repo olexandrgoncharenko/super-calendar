@@ -1,8 +1,19 @@
-.week {
-	display: grid;
-	grid-template-rows: auto 1fr;
-	gap: 10px;
-	height: 100%;
+.container {
+	display: flex;
+	flex-wrap: nowrap;
+	width: 100%;
+	overflow-y: auto;
+	height: 500px;
+}
+
+.custom-scrollbar {
+	scrollbar-color: #c4c7c5 #f4f4f5;
+	scrollbar-width: thin;
+	transition: all 0.3s ease;
+}
+
+.custom-scrollbar:hover {
+	scrollbar-color: #747775 #f4f4f5;
 }
 
 .header {
