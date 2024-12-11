@@ -29,8 +29,13 @@
 }  */
 
 .container {
+	border-top: 1px solid red;
 	width: 100%;
 	display: flex;
+}
+
+.wrapper {
+	width: 100%;
 }
 .presentation {
 	width: 100%;
@@ -49,11 +54,15 @@
 }
 
 .presentation__row-cell {
-	border: 1px solid grey;
+	/* border: 1px solid grey; */
 	height: 100%;
-	background-color: rgba(230, 230, 230, 0.5); /* Прозрачный фон */
+	/* background-color: rgba(230, 230, 230, 0.5);  */
+	border-left: 1px solid var(--light-grey);
+	/* border-bottom: 1px solid var(--light-grey); */
 }
-
+.presentation__row-cell:last-child {
+	border-right: 1px solid var(--light-grey);
+}
 .event {
 	background-color: lightblue;
 	padding: 5px;
@@ -61,7 +70,7 @@
 	/* height: 100%; Сделать высоту события равной высоте строки */
 	position: absolute;
 
-	height: 22px;
+	height: 18px;
 	padding: 2px 8px;
 
 	overflow: hidden;

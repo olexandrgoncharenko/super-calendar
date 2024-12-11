@@ -10,325 +10,63 @@ type FieldHeaderProps = {
 const FieldHeader: React.FC<FieldHeaderProps> = ({ dates, fullDayEvents }) => {
 	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
+	console.log(`dates: ${JSON.stringify(dates)}`);
+
+	const today = new Date();
+	today.setHours(0, 0, 0, 0); // Устанавливаем время в 00:00 для сравнения только даты
+
 	return (
-		<div>
+		<div className={styles.container}>
 			<div className={styles.header}>
-				<div className={styles.timeColumn}></div>
-				<div className={styles.weekdays}>
+				{/* <div className={styles.timeColumn}></div> */}
+				<div className='timeColumn'></div>
+				<div
+					className={styles['header__weekdays']}
+					style={{
+						gridTemplateColumns: `repeat(${dates.length}, 1fr)`,
+					}}
+				>
 					{dates.map((dateStr, index) => {
 						const date = new Date(dateStr);
+
+						date.setHours(0, 0, 0, 0); // Устанавливаем время в 00:00 для сравнения только даты
+						const isToday = date.getTime() === today.getTime();
+
 						const dayOfWeek = daysOfWeek[(date.getDay() + 6) % 7];
 						const dayOfMonth = date.getDate();
 
 						return (
-							<div key={index} className={styles.dayContainer}>
-								<div className={styles.dayOfWeek}>
-									{dayOfWeek}
+							<div
+								key={index}
+								// className={styles.dayContainer}
+								className={styles.day}
+							>
+								<div
+									// className={styles.inner}
+									className={`${styles['day__inner']} ${
+										isToday ? styles.today : ''
+									}`}
+								>
+									<div className={styles['day__week']}>
+										{dayOfWeek}
+									</div>
+									<div className={styles['day__date']}>
+										{dayOfMonth}
+									</div>
 								</div>
-								<div className={styles.dayOfMonth}>
-									{dayOfMonth}
-								</div>
-
-								{/* Full-day events */}
-								{/* <div className={styles.fullDayEvents}>
-								{fullDayEvents
-									.filter((event) => {
-										const eventStart = new Date(
-											event.start.date
-										);
-										let eventEnd = new Date(event.end.date);
-
-										// Уменьшаем конец события на один день
-										eventEnd.setDate(
-											eventEnd.getDate() - 1
-										);
-
-										// Проверяем, попадает ли событие в диапазон текущей даты
-										return (
-											eventStart <= date &&
-											eventEnd >= date
-										);
-									})
-									.map((event) => {
-										const eventStart = new Date(
-											event.start.date
-										);
-										let eventEnd = new Date(event.end.date);
-
-										// Уменьшаем конец события на один день
-										eventEnd.setDate(
-											eventEnd.getDate() - 1
-										);
-
-										// Расчет, сколько дней занимает событие
-										const durationInDays =
-											(eventEnd.getTime() -
-												eventStart.getTime()) /
-												(1000 * 3600 * 24) +
-											1;
-
-										// Определяем, с какого дня начать и сколько дней занимает событие
-										const startOffset = Math.max(
-											(eventStart.getTime() -
-												date.getTime()) /
-												(1000 * 3600 * 24),
-											0
-										);
-
-										return (
-											<div
-												key={event.id}
-												className={styles.fullDayEvent}
-												style={{
-													gridColumn: `span ${Math.min(
-														durationInDays,
-														dates.length - index
-													)}`,
-												}}
-											>
-												{event.summary}
-											</div>
-										);
-									})}
-							</div> */}
 							</div>
 						);
 					})}
 				</div>
 			</div>
-			<div style={{ width: '100%', display: 'flex' }}>
-				<div className={styles.timeColumn}></div>
+			{fullDayEvents.length > 0 && (
 				<FieldHeaderPresentation
 					fullDayEvents={fullDayEvents}
 					dates={dates}
 				/>
-			</div>
+			)}
 		</div>
 	);
 };
 
 export default FieldHeader;
-
-// import styles from './FieldHeader.module.css';
-// import { CalendarEvent } from '../Field/DayOrWeekView/DayOrWeekView';
-
-// type FieldHeaderProps = {
-// 	dates: string[];
-// 	fullDayEvents: CalendarEvent[];
-// };
-
-// const FieldHeader: React.FC<FieldHeaderProps> = ({ dates, fullDayEvents }) => {
-// 	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
-// 	return (
-// 		<div className={styles.header}>
-// 			<div className={styles.timeColumn}></div>
-// 			<div className={styles.weekdays}>
-// 				{dates.map((dateStr, index) => {
-// 					const date = new Date(dateStr);
-// 					const dayOfWeek = daysOfWeek[(date.getDay() + 6) % 7];
-// 					const dayOfMonth = date.getDate();
-
-// 					return (
-// 						<div key={index} className={styles.dayContainer}>
-// 							<div className={styles.dayOfWeek}>{dayOfWeek}</div>
-// 							<div className={styles.dayOfMonth}>
-// 								{dayOfMonth}
-// 							</div>
-
-// 							{/* Full-day events */}
-// 							<div className={styles.fullDayEvents}>
-// 								{fullDayEvents
-// 									.filter((event) => {
-// 										const eventStart = new Date(
-// 											event.start.date
-// 										);
-// 										const eventEnd = new Date(
-// 											event.end.date
-// 										);
-
-// 										// Проверяем, начинается ли событие в пределах текущего дня
-// 										return (
-// 											eventStart <= date &&
-// 											eventEnd >= date
-// 										);
-// 									})
-// 									.map((event) => {
-// 										const eventStart = new Date(
-// 											event.start.date
-// 										);
-// 										const eventEnd = new Date(
-// 											event.end.date
-// 										);
-
-// 										// Расчет, сколько дней занимает событие
-// 										const durationInDays =
-// 											(eventEnd.getTime() -
-// 												eventStart.getTime()) /
-// 												(1000 * 3600 * 24) +
-// 											1;
-
-// 										// Определяем, с какого дня начать и сколько дней занимает событие
-// 										const startOffset = Math.max(
-// 											(eventStart.getTime() -
-// 												date.getTime()) /
-// 												(1000 * 3600 * 24),
-// 											0
-// 										);
-
-// 										return (
-// 											<div
-// 												key={event.id}
-// 												className={styles.fullDayEvent}
-// 												style={{
-// 													gridColumn: `span ${Math.min(
-// 														durationInDays,
-// 														dates.length - index
-// 													)}`,
-// 												}}
-// 											>
-// 												{event.summary}
-// 											</div>
-// 										);
-// 									})}
-// 							</div>
-// 						</div>
-// 					);
-// 				})}
-// 			</div>
-// 		</div>
-// 	);
-// };
-
-// export default FieldHeader;
-
-// import styles from './FieldHeader.module.css';
-// import { CalendarEvent } from '../Field/DayOrWeekView/DayOrWeekView';
-
-// type FieldHeaderProps = {
-// 	dates: string[];
-// 	fullDayEvents: CalendarEvent[];
-// };
-
-// const FieldHeader: React.FC<FieldHeaderProps> = ({ dates, fullDayEvents }) => {
-// 	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
-// 	return (
-// 		<div className={styles.header}>
-// 			<div className={styles.timeColumn}></div>
-// 			<div className={styles.weekdays}>
-// 				{dates.map((dateStr, index) => {
-// 					const date = new Date(dateStr);
-// 					const dayOfWeek = daysOfWeek[(date.getDay() + 6) % 7];
-// 					const dayOfMonth = date.getDate();
-
-// 					// Фильтрация событий для текущей даты
-// 					const eventsForDate = fullDayEvents.filter((event) => {
-// 						const eventDate = new Date(event.start.date);
-// 						return eventDate.toDateString() === date.toDateString();
-// 					});
-
-// 					return (
-// 						<div key={index} className={styles.dayContainer}>
-// 							<div className={styles.dayOfWeek}>{dayOfWeek}</div>
-// 							<div className={styles.dayOfMonth}>
-// 								{dayOfMonth}
-// 							</div>
-
-// 							{/* Full-day events */}
-// 							<div className={styles.fullDayEvents}>
-// 								{eventsForDate.map((event) => (
-// 									<div
-// 										key={event.id}
-// 										className={styles.fullDayEvent}
-// 									>
-// 										{event.summary}
-// 									</div>
-// 								))}
-// 							</div>
-// 						</div>
-// 					);
-// 				})}
-// 			</div>
-// 		</div>
-// 	);
-// };
-
-// export default FieldHeader;
-
-// import styles from './FieldHeader.module.css';
-// import { CalendarEvent } from '../Field/DayOrWeekView/DayOrWeekView';
-
-// type FieldHeaderProps = {
-// 	dates: string[];
-// 	fullDayEvents: CalendarEvent[];
-// };
-
-// const FieldHeader: React.FC<FieldHeaderProps> = ({ dates, fullDayEvents }) => {
-// 	return (
-// 		<div className={styles.header}>
-// 			<div className={styles.timeColumn}></div>
-// 			<div className={styles.weekdays}>
-// 				{dates.map((dateStr, index) => {
-// 					const date = new Date(dateStr);
-// 					const daysOfWeek = [
-// 						'Пн',
-// 						'Вт',
-// 						'Ср',
-// 						'Чт',
-// 						'Пт',
-// 						'Сб',
-// 						'Вс',
-// 					];
-// 					const dayOfWeek = daysOfWeek[(date.getDay() + 6) % 7]; // Корректировка для понедельца как первого дня недели
-// 					const dayOfMonth = date.getDate();
-
-// 					return (
-// 						<div key={index} className={styles.dayContainer}>
-// 							<div className={styles.dayOfWeek}>{dayOfWeek}</div>
-// 							<div className={styles.dayOfMonth}>
-// 								{dayOfMonth}
-// 							</div>
-// 							{dates.map((dateStr, dateIndex) => {
-// 								const date = new Date(dateStr);
-
-// 								return (
-// 									<div
-// 										key={dateIndex}
-// 										className={styles.dayColumn}
-// 									>
-// 										{/* Full-day events */}
-// 										<div className={styles.fullDayEvents}>
-// 											{fullDayEvents
-// 												.filter((event) => {
-// 													const eventDate = new Date(
-// 														event.start.date
-// 													);
-// 													return (
-// 														eventDate.toDateString() ===
-// 														date.toDateString()
-// 													);
-// 												})
-// 												.map((event) => (
-// 													<div
-// 														key={event.id}
-// 														className={
-// 															styles.fullDayEvent
-// 														}
-// 													>
-// 														{event.summary}
-// 													</div>
-// 												))}
-// 										</div>
-// 									</div>
-// 								);
-// 							})}
-// 						</div>
-// 					);
-// 				})}
-// 			</div>
-// 		</div>
-// 	);
-// };
-
-// export default FieldHeader;

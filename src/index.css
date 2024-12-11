@@ -90,8 +90,13 @@ h6 {
 	height: 100%;
 }
 
-.timecolumn {
-	width: 40px;
+.timeColumn {
+	width: 65px;
 	height: 100%;
-	background-color: blueviolet;
+}
+:root {
+	--light-grey: #e5e5e5;
+	--dark-grey: #71717a;
+	--black: #000000;
+	--light-blue: #3b82f6;
 }

@@ -77,7 +77,7 @@ export const useGoogleAuth = () => {
 	const [allTasks, setAllTasks] = useState<TaskListWithTasks[]>([]);
 	const [allEvents, setAllEvents] = useState<CalendarListWithEvents[]>([]);
 
-	// console.log(`allEvents: ${JSON.stringify(allEvents)}`);
+	console.log(`allEvents: ${JSON.stringify(allEvents)}`);
 
 	if (!CLIENT_ID || !API_KEY) {
 		throw new Error(

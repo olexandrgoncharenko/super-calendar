@@ -1,139 +1,64 @@
-.week {
-	display: grid;
-	grid-template-rows: auto 1fr;
-	gap: 10px;
-	height: 100%;
-}
-
-.header {
-	display: grid;
-	grid-template-columns: 60px repeat(7, 1fr);
-	align-items: center;
-	text-align: center;
-	font-weight: bold;
-}
-
-.timeHeader {
-	background-color: #f0f0f0;
-	height: 40px;
-}
-
-.weekdays {
-	display: grid;
-	grid-template-columns: repeat(7, 1fr);
-	gap: 5px;
-}
-
-.dayContainer {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	background-color: #f9f9f9;
-	padding: 10px;
-	border: 1px solid #ddd;
-}
-
-.dayOfWeek {
-	font-size: 14px;
-	color: #666;
-}
-
-.dayOfMonth {
-	font-size: 18px;
-	font-weight: bold;
-	color: #333;
-}
-
-.body {
-	display: grid;
-	grid-template-columns: 60px repeat(7, 1fr);
-	gap: 10px;
-	overflow-y: auto;
-}
-
-.timeColumn {
-	display: flex;
-	flex-direction: column;
-	gap: 5px;
-	background-color: #f0f0f0;
-}
-
-.timeSlot {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: 60px;
-	border: 1px solid #ddd;
-	font-size: 12px;
-	color: #333;
-}
-
-.dayColumn {
-	display: flex;
-	flex-direction: column;
-	gap: 5px;
-}
-
-.fullDayEvents {
-	height: 40px;
-	border-bottom: 1px solid #ddd;
-	padding: 5px;
-	background-color: #f0f8ff;
-}
-
-.fullDayEvent {
-	background-color: #b3d9ff;
-	border: 1px solid #80bfff;
-	padding: 5px;
-	font-size: 12px;
-	color: #003366;
-	text-align: center;
-	border-radius: 3px;
-}
-
-.timeSlotEvent {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: 60px;
-	border: 1px solid #ddd;
-	background-color: #e6f7ff;
-	font-size: 12px;
-	color: #004080;
-}
-
-.bodyNew {
-	background-color: grey;
-	/* display: grid;
-	grid-auto-flow: column; */
-}
-.bodyHeader {
-	display: flex;
-	justify-content: space-between;
-}
-
-.header {
-	display: grid;
-	grid-template-columns: 80px repeat(7, 1fr); /* 80px для колонки времени */
-}
-
-.weekdays {
-	display: grid;
-	grid-template-columns: repeat(7, 1fr);
-}
-
-.dayContainer {
-	border: 1px solid #ccc;
+.container {
+	box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.3);
 	position: relative;
+	z-index: 3;
+	padding-right: 8px;
+}
+.header {
+	display: flex;
+	width: 100%;
+	height: 58px;
+}
+.header__weekdays {
+	display: grid;
+
+	width: 100%;
+}
+.day {
+	border-top: 1px solid var(--light-grey);
+	/* border-bottom: 1px solid var(--light-grey); */
+	border-left: 1px solid var(--light-grey);
+	/* padding: 2px; */
+	font-family: 'Inter', serif;
+	text-align: center;
+	line-height: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.day:last-child {
+	border-right: 1px solid var(--light-grey);
 }
 
-.fullDayEvent {
-	background-color: lightblue;
-	padding: 5px;
-	border-radius: 3px;
-	white-space: nowrap;
+.day__inner {
+	/* border: 1px solid red; */
+	border-radius: 50%;
+	width: 52px;
+	height: 52px;
+	margin: 0 auto;
+	padding: 4px;
+}
+.day__week {
+	font-weight: 700;
+	color: var(--dark-grey);
+	font-size: 12px;
+	margin-bottom: 2px;
 	overflow: hidden;
-	text-overflow: ellipsis;
-	grid-column: span 1; /* значение по умолчанию */
+}
+
+.day__date {
+	font-weight: 500;
+	color: var(--black);
+	font-size: 28px;
+}
+
+.today {
+	background-color: var(--light-blue);
+}
+.day__inner.today .day__date {
+	color: #fff;
+}
+
+.day__inner.today .day__week {
+	color: #32435c;
 }

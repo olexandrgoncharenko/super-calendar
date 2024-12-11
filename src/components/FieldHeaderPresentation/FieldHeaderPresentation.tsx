@@ -3,6 +3,8 @@ import { CalendarEvent } from '../../types/CalendarEvent';
 import React, { useEffect, useState } from 'react';
 import styles from './FieldHeaderPresentation.module.css';
 
+import { gapi } from 'gapi-script';
+
 interface FieldHeaderProps {
 	fullDayEvents: CalendarEvent[];
 	dates: string[];
@@ -12,7 +14,7 @@ const FieldHeaderPresentation: React.FC<FieldHeaderProps> = ({
 	fullDayEvents,
 	dates,
 }) => {
-	// console.log(fullDayEvents);
+	console.log(`fullDayEvents: ${JSON.stringify(fullDayEvents)}`);
 
 	const [eventsWithStyles, setEventsWithStyles] = useState<
 		{ event: CalendarEvent; width: number; left: number; row: number }[]
@@ -169,59 +171,66 @@ const FieldHeaderPresentation: React.FC<FieldHeaderProps> = ({
 		? eventsWithStyles
 		: eventsWithStyles.slice(0, 2); // Только первые два события
 
-	const rowHeight = eventsToDisplay.length * 22;
+	// const rowHeight = eventsToDisplay.length * 22;
+	// const rowHeight = eventsWithStyles.length * 22;
+	const rowHeight = eventsWithStyles.length * 18;
 
 	return (
 		<>
 			<div className={styles.container}>
-				<div className='timecolumn'></div>
-				<div className={styles.presentation}>
-					{/* Фон с датами (ячейки presentation__row-cell) */}
+				<div className='timeColumn'></div>
+				<div className={styles.wrapper}>
+					<div className={styles.presentation}>
+						{/* Фон с датами (ячейки presentation__row-cell) */}
 
-					<div
-						className={styles['presentation__row']}
-						style={{ height: `${rowHeight}px` }}
-					>
-						{dates.map((date) => {
+						<div
+							className={styles['presentation__row']}
+							style={{ height: `${rowHeight}px` }}
+						>
+							{dates.map((date) => {
+								return (
+									<div
+										key={date}
+										className={
+											styles['presentation__row-cell']
+										}
+										style={{ height: `${rowHeight}px` }} // Установите высоту ячеек в зависимости от высоты событий
+									></div>
+								);
+							})}
+						</div>
+						{/* События, отображаемые поверх ячеек */}
+						{/* {eventsToDisplay.map(({ event, width, left, row }) => { */}
+						{eventsWithStyles.map(({ event, width, left, row }) => {
 							return (
 								<div
-									key={date}
-									className={styles['presentation__row-cell']}
-									style={{ height: `${rowHeight}px` }} // Установите высоту ячеек в зависимости от высоты событий
-								></div>
+									className={styles.event}
+									key={event.id}
+									style={{
+										width: `${width}%`,
+										left: `${left}%`,
+										top: `${row * 18}px`, // Расположение по рядам
+										position: 'absolute',
+										// height: `40px`, // Высота события
+									}}
+								>
+									<span className={styles['event__descr']}>
+										{event.summary}
+									</span>
+								</div>
 							);
 						})}
 					</div>
-					{/* События, отображаемые поверх ячеек */}
-					{eventsToDisplay.map(({ event, width, left, row }) => {
-						return (
-							<div
-								className={styles.event}
-								key={event.id}
-								style={{
-									width: `${width}%`,
-									left: `${left}%`,
-									top: `${row * 22}px`, // Расположение по рядам
-									position: 'absolute',
-									// height: `40px`, // Высота события
-								}}
-							>
-								<span className={styles['event__descr']}>
-									{event.summary}
-								</span>
-							</div>
-						);
-					})}
+					{/* {eventsWithStyles.length > 2 && (
+						<button
+							className={styles.toggleButton}
+							onClick={() => setShowAllEvents((prev) => !prev)}
+						>
+							{showAllEvents ? 'Показать меньше' : 'Показать все'}
+						</button>
+					)} */}
 				</div>
 			</div>
-			{eventsWithStyles.length > 2 && (
-				<button
-					className={styles.toggleButton}
-					onClick={() => setShowAllEvents((prev) => !prev)}
-				>
-					{showAllEvents ? 'Показать меньше' : 'Показать все'}
-				</button>
-			)}
 		</>
 	);
 };

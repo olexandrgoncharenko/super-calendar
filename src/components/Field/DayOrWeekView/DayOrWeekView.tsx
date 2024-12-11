@@ -319,24 +319,24 @@ const DayOrWeekView: React.FC = () => {
 	}, [timeSlotEvents, datesForDisplay]);
 
 	return (
-		<div>
-			<div className={styles.week}>
-				<FieldHeader
+		// <div>
+		<div className={styles.week}>
+			<FieldHeader
+				dates={datesForDisplay}
+				fullDayEvents={fullDayEvents}
+			/>
+			<div
+				className={`${styles.container} ${styles['custom-scrollbar']}`}
+				ref={tableRef}
+			>
+				<TimeSlots />
+				<DayEventGrid
 					dates={datesForDisplay}
-					fullDayEvents={fullDayEvents}
+					timeSlotEvents={timeSlotEvents}
 				/>
-				<div
-					className={`${styles.container} ${styles['custom-scrollbar']}`}
-					ref={tableRef}
-				>
-					<TimeSlots />
-					<DayEventGrid
-						dates={datesForDisplay}
-						timeSlotEvents={timeSlotEvents}
-					/>
-				</div>
 			</div>
 		</div>
+		// </div>
 	);
 };
 

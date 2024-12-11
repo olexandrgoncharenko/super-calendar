@@ -3,4 +3,5 @@ export interface CalendarEvent {
 	summary: string;
 	start: string;
 	end: string;
+	colorId: string;
 }

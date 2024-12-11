@@ -4,9 +4,24 @@
 	width: 100%;
 	overflow-y: auto;
 	height: 500px;
+	/* display: none; */
 }
 
-.custom-scrollbar {
+.container::-webkit-scrollbar {
+	width: 8px; /* Для вертикального скроллбара */
+	height: 8px; /* Для горизонтального скроллбара */
+}
+
+.container::-webkit-scrollbar-thumb {
+	background: #c4c7c5;
+	border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-track {
+	background: #f4f4f5;
+}
+
+/* .custom-scrollbar {
 	scrollbar-color: #c4c7c5 #f4f4f5;
 	scrollbar-width: thin;
 	transition: all 0.3s ease;
@@ -14,7 +29,7 @@
 
 .custom-scrollbar:hover {
 	scrollbar-color: #747775 #f4f4f5;
-}
+} */
 
 .header {
 	display: grid;

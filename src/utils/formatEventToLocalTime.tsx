@@ -143,5 +143,8 @@ export const formatEventToLocalTime = (
 		end: endDateTime
 			? endDateTime.toFormat(format || defaultFormat)
 			: 'Дата не указана',
+		// foregroundColor: event.foregroundColor || 'default',
+		// backgroundColor: event.backgroundColor || 'default',
+		colorId: event.colorId || 'default',
 	};
 };
