@@ -77,7 +77,12 @@ const CalendarList = () => {
 
 	if (isSignedIn && userCalendarLists.length > 0) {
 		calendarListsToShow = userCalendarLists.map((list: any) => (
-			<div key={list.id}>
+			<div
+				key={list.id}
+				style={{
+					backgroundColor: list.color || 'transparent', // Использовать 'transparent', если цвет не задан
+				}}
+			>
 				<input
 					id={list.id}
 					type='checkbox'

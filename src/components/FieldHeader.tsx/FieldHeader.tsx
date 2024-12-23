@@ -10,7 +10,7 @@ type FieldHeaderProps = {
 const FieldHeader: React.FC<FieldHeaderProps> = ({ dates, fullDayEvents }) => {
 	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-	console.log(`dates: ${JSON.stringify(dates)}`);
+	// console.log(`dates: ${JSON.stringify(dates)}`);
 
 	const today = new Date();
 	today.setHours(0, 0, 0, 0); // Устанавливаем время в 00:00 для сравнения только даты

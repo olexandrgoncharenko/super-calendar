@@ -29,7 +29,7 @@
 }  */
 
 .container {
-	border-top: 1px solid red;
+	/* border-top: 1px solid red; */
 	width: 100%;
 	display: flex;
 }
@@ -64,16 +64,21 @@
 	border-right: 1px solid var(--light-grey);
 }
 .event {
-	background-color: lightblue;
+	/* background-color: lightblue; */
 	padding: 5px;
-	border: 1px solid grey;
+	/* border: 1px solid grey; */
 	/* height: 100%; Сделать высоту события равной высоте строки */
 	position: absolute;
 
 	height: 18px;
-	padding: 2px 8px;
+	padding: 2px 4px;
 
 	overflow: hidden;
+	color: #606969;
+	border-radius: 5px;
+	display: flex;
+	align-items: center;
+	/* margin: 1px; */
 }
 
 .event__descr {
@@ -82,4 +87,9 @@
 	font-size: 12px;
 	font-weight: 500;
 	max-height: 100%;
+	line-height: 1.2;
+	/* width: 100%; */
+	display: block;
+	white-space: nowrap;
+	overflow: hidden;
 }

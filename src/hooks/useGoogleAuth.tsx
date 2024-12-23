@@ -17,6 +17,33 @@ const DISCOVERY_DOCS = [
 ];
 const SCOPES = process.env.REACT_APP_SCOPES;
 
+const staticCalendarColors: Record<string, string> = {
+	'1': '#ac725e',
+	'2': '#d06b64',
+	'3': '#f83a22',
+	'4': '#fa573c',
+	'5': '#ff7537',
+	'6': '#ffad46',
+	'7': '#42d692',
+	'8': '#16a765',
+	'9': '#7bd148',
+	'10': '#b3dc6c',
+	'11': '#fbe983',
+	'12': '#fad165',
+	'13': '#92e1c0',
+	'14': '#9fe1e7',
+	'15': '#9fc6e7',
+	'16': '#4986e7',
+	'17': '#9a9cff',
+	'18': '#b99aff',
+	'19': '#c2c2c2',
+	'20': '#cabdbf',
+	'21': '#cca6ac',
+	'22': '#f691b2',
+	'23': '#cd74e6',
+	'24': '#a47ae2',
+};
+
 export interface UnifiedListItem {
 	// kind: string; // "kind": "tasks#taskList",
 	id: string;
@@ -78,6 +105,7 @@ export const useGoogleAuth = () => {
 	const [allEvents, setAllEvents] = useState<CalendarListWithEvents[]>([]);
 
 	console.log(`allEvents: ${JSON.stringify(allEvents)}`);
+	// console.log(`userCalendarLists: ${JSON.stringify(userCalendarLists)}`);
 
 	if (!CLIENT_ID || !API_KEY) {
 		throw new Error(
@@ -189,9 +217,11 @@ export const useGoogleAuth = () => {
 				if (response.result.items) {
 					const calendarLists = response.result.items.map(
 						(item: any) => ({
-							// kind: 'calendar#calendarListEntry',
 							id: item.id,
 							title: item.summary,
+							color:
+								staticCalendarColors[item.colorId] ||
+								staticCalendarColors['default'],
 						})
 					);
 					setUserCalendarLists(calendarLists);
@@ -201,6 +231,7 @@ export const useGoogleAuth = () => {
 			console.error('Error fetching calendar lists:', err);
 		}
 	};
+
 	useEffect(() => {
 		if (isSignedIn) {
 			fetchTaskLists();

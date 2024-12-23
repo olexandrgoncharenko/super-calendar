@@ -61,7 +61,7 @@ const DayOrWeekView: React.FC = () => {
 	// console.log(datesForDisplay);
 
 	const [timeSlotEvents, setTimesSlotEvents] = useState<CalendarEvent[]>([]);
-	console.log(timeSlotEvents);
+	// console.log(timeSlotEvents);
 
 	const filteredEventsByCalendar = (calendars: any) => {
 		// console.log('Запуск функции...');
@@ -122,9 +122,9 @@ const DayOrWeekView: React.FC = () => {
 			}
 		);
 
-		console.log(
-			`filteredEventsByDate: ${JSON.stringify(filteredEventsByDate)}`
-		);
+		// console.log(
+		// 	`filteredEventsByDate: ${JSON.stringify(filteredEventsByDate)}`
+		// );
 
 		const fullDayEvents: any[] = [];
 		const timeSlotEvents: any[] = [];
@@ -216,9 +216,9 @@ const DayOrWeekView: React.FC = () => {
 			}
 
 			// Логируем сравнение времени начала события с самым ранним событием
-			console.log(
-				`Comparing event start: ${eventStart} with earliest start: ${earliestStart}`
-			);
+			// console.log(
+			// 	`Comparing event start: ${eventStart} with earliest start: ${earliestStart}`
+			// );
 
 			return eventStart.getTime() < earliestStart.getTime()
 				? event
@@ -226,7 +226,7 @@ const DayOrWeekView: React.FC = () => {
 		}, timeSlotEvents[0]);
 
 		// Логируем время начала самого раннего события
-		console.log('Earliest event start time:', earliestEvent.start);
+		// console.log('Earliest event start time:', earliestEvent.start);
 
 		const eventStartHour = new Date(earliestEvent.start).getHours();
 
@@ -295,7 +295,7 @@ const DayOrWeekView: React.FC = () => {
 
 	useEffect(() => {
 		if (!timeSlotEvents || timeSlotEvents.length === 0) {
-			console.log('No events to display, scrolling to top');
+			// console.log('No events to display, scrolling to top');
 			if (tableRef.current) {
 				tableRef.current.scrollTop = 7 * 48; // Сбрасываем прокрутку на 7:00
 			}
@@ -306,12 +306,12 @@ const DayOrWeekView: React.FC = () => {
 			const scrollPosition = calculateScrollPosition(timeSlotEvents);
 
 			// Логируем итоговую позицию прокрутки
-			console.log('Calculated scroll position:', scrollPosition);
+			// console.log('Calculated scroll position:', scrollPosition);
 
 			// Устанавливаем прокрутку с небольшой задержкой
 			setTimeout(() => {
 				if (tableRef.current) {
-					console.log('Setting scroll position to:', scrollPosition);
+					// console.log('Setting scroll position to:', scrollPosition);
 					tableRef.current!.scrollTop = scrollPosition;
 				}
 			}, 0);
