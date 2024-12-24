@@ -1,39 +1,7 @@
-/* .presentation {
-	width: 100%;
-	position: relative;
-}
-
-.presentation__row {
-	width: 100%;
-	display: grid;
-	grid-template-columns: repeat(
-		auto-fit,
-		minmax(0, 1fr)
-	); /* Автоматические колонки */
-/* position: relative;
-	height: 40px; /* Фиксированная высота для строк с датами */
-/* }
-
-.presentation__row-cell {
-	border: 1px solid grey;
-	height: 100%;
-	background-color: rgba(230, 230, 230, 0.5); /* Прозрачный фон */
-/* }
-
-.event {
-	background-color: lightblue;
-	padding: 5px;
-	border: 1px solid grey;
-	height: 30px; /* Пример высоты события */
-/* position: absolute;
-}  */
-
 .container {
-	/* border-top: 1px solid red; */
 	width: 100%;
 	display: flex;
 }
-
 .wrapper {
 	width: 100%;
 }
@@ -42,53 +10,35 @@
 	position: relative;
 	display: flex;
 }
-
 .presentation__row {
 	width: 100%;
 	display: grid;
-	grid-template-columns: repeat(
-		auto-fit,
-		minmax(0, 1fr)
-	); /* Автоматические колонки */
+	grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
 	position: relative;
 }
-
 .presentation__row-cell {
-	/* border: 1px solid grey; */
 	height: 100%;
-	/* background-color: rgba(230, 230, 230, 0.5);  */
 	border-left: 1px solid var(--light-grey);
-	/* border-bottom: 1px solid var(--light-grey); */
 }
 .presentation__row-cell:last-child {
 	border-right: 1px solid var(--light-grey);
 }
 .event {
-	/* background-color: lightblue; */
 	padding: 5px;
-	/* border: 1px solid grey; */
-	/* height: 100%; Сделать высоту события равной высоте строки */
 	position: absolute;
-
 	height: 18px;
 	padding: 2px 4px;
-
 	overflow: hidden;
-	color: #606969;
-	border-radius: 5px;
+	color: #000000;
+	border-radius: 3px;
 	display: flex;
 	align-items: center;
-	/* margin: 1px; */
 }
-
 .event__descr {
-	/* overflow: hidden; */
-
 	font-size: 12px;
 	font-weight: 500;
 	max-height: 100%;
 	line-height: 1.2;
-	/* width: 100%; */
 	display: block;
 	white-space: nowrap;
 	overflow: hidden;

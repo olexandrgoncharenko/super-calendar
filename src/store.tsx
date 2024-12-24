@@ -13,6 +13,7 @@ type State = {
 	selectedTaskLists: string[];
 	selectedCalendarLists: string[];
 	activeCalendarViewMonthAndYear: ActiveCalendarMonthAndYear; // Отображаемый месяц и год
+	staticCalendarColors: Record<string, string>;
 };
 type SetCurrentDate = {
 	type: 'SET_CURRENT_DATE';
@@ -69,6 +70,32 @@ const initialState: State = {
 	activeCalendarViewMonthAndYear: {
 		year: new Date().getFullYear(),
 		month: new Date().getMonth(),
+	},
+	staticCalendarColors: {
+		'1': '#ac725e',
+		'2': '#d06b64',
+		'3': '#f83a22',
+		'4': '#fa573c',
+		'5': '#ff7537',
+		'6': '#ffad46',
+		'7': '#42d692',
+		'8': '#16a765',
+		'9': '#7bd148',
+		'10': '#b3dc6c',
+		'11': '#fbe983',
+		'12': '#fad165',
+		'13': '#92e1c0',
+		'14': '#9fe1e7',
+		'15': '#9fc6e7',
+		'16': '#4986e7',
+		'17': '#9a9cff',
+		'18': '#b99aff',
+		'19': '#c2c2c2',
+		'20': '#cabdbf',
+		'21': '#cca6ac',
+		'22': '#f691b2',
+		'23': '#cd74e6',
+		'24': '#a47ae2',
 	},
 };
 

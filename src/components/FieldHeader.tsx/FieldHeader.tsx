@@ -9,16 +9,12 @@ type FieldHeaderProps = {
 
 const FieldHeader: React.FC<FieldHeaderProps> = ({ dates, fullDayEvents }) => {
 	const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
-	// console.log(`dates: ${JSON.stringify(dates)}`);
-
 	const today = new Date();
 	today.setHours(0, 0, 0, 0); // Устанавливаем время в 00:00 для сравнения только даты
 
 	return (
 		<div className={styles.container}>
 			<div className={styles.header}>
-				{/* <div className={styles.timeColumn}></div> */}
 				<div className='timeColumn'></div>
 				<div
 					className={styles['header__weekdays']}
@@ -31,18 +27,12 @@ const FieldHeader: React.FC<FieldHeaderProps> = ({ dates, fullDayEvents }) => {
 
 						date.setHours(0, 0, 0, 0); // Устанавливаем время в 00:00 для сравнения только даты
 						const isToday = date.getTime() === today.getTime();
-
 						const dayOfWeek = daysOfWeek[(date.getDay() + 6) % 7];
 						const dayOfMonth = date.getDate();
 
 						return (
-							<div
-								key={index}
-								// className={styles.dayContainer}
-								className={styles.day}
-							>
+							<div key={index} className={styles.day}>
 								<div
-									// className={styles.inner}
 									className={`${styles['day__inner']} ${
 										isToday ? styles.today : ''
 									}`}

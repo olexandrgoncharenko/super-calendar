@@ -1,6 +1,8 @@
 import React from 'react';
 import styles from './DayEventGrid.module.css';
 import { CalendarEvent } from '../../types/CalendarEvent';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 type DayEventGridProps = {
 	dates: string[];
@@ -11,6 +13,9 @@ export const DayEventGrid: React.FC<DayEventGridProps> = ({
 	dates,
 	timeSlotEvents,
 }) => {
+	const staticCalendarColors = useSelector(
+		(state: RootState) => state.staticCalendarColors
+	);
 	// console.log(`timeSlotEvents: ${JSON.stringify(timeSlotEvents)}`);
 	// Вычисление стилей для события, чтобы позиционировать его относительно дня
 	const calculateEventStyles = (event: CalendarEvent, date: string) => {
@@ -35,9 +40,17 @@ export const DayEventGrid: React.FC<DayEventGridProps> = ({
 			((visibleStart - dayStart.getTime()) / totalDayDurationInMs) * 100;
 		const heightPercentage = (durationInMs / totalDayDurationInMs) * 100;
 
+		const defaultColor = '#79ede4';
+
+		const backgroundColor =
+			event.colorId && staticCalendarColors[event.colorId]
+				? staticCalendarColors[event.colorId]
+				: defaultColor;
+
 		return {
 			top: `${topPercentage}%`,
 			height: `${heightPercentage}%`,
+			backgroundColor: backgroundColor,
 		};
 	};
 
@@ -86,6 +99,8 @@ export const DayEventGrid: React.FC<DayEventGridProps> = ({
 										height: eventStyles.height,
 										left: '5%', // небольшой отступ
 										width: '90%', // ширина события
+										backgroundColor:
+											eventStyles.backgroundColor,
 									}}
 								>
 									{event.summary}

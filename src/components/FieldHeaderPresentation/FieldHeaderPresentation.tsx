@@ -1,33 +1,8 @@
 import { CalendarEvent } from '../../types/CalendarEvent';
 import React, { useEffect, useState } from 'react';
 import styles from './FieldHeaderPresentation.module.css';
-
-const staticCalendarColors: Record<string, string> = {
-	'1': '#ac725e',
-	'2': '#d06b64',
-	'3': '#f83a22',
-	'4': '#fa573c',
-	'5': '#ff7537',
-	'6': '#ffad46',
-	'7': '#42d692',
-	'8': '#16a765',
-	'9': '#7bd148',
-	'10': '#b3dc6c',
-	'11': '#fbe983',
-	'12': '#fad165',
-	'13': '#92e1c0',
-	'14': '#9fe1e7',
-	'15': '#9fc6e7',
-	'16': '#4986e7',
-	'17': '#9a9cff',
-	'18': '#b99aff',
-	'19': '#c2c2c2',
-	'20': '#cabdbf',
-	'21': '#cca6ac',
-	'22': '#f691b2',
-	'23': '#cd74e6',
-	'24': '#a47ae2',
-};
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 interface FieldHeaderProps {
 	fullDayEvents: CalendarEvent[];
 	dates: string[];
@@ -46,6 +21,10 @@ const FieldHeaderPresentation: React.FC<FieldHeaderProps> = ({
 			backgroundColor: string;
 		}[]
 	>([]);
+
+	const staticCalendarColors = useSelector(
+		(state: RootState) => state.staticCalendarColors
+	);
 
 	const sortEventsByStartDate = (events: CalendarEvent[]) => {
 		return events.sort((a, b) => {
@@ -100,7 +79,7 @@ const FieldHeaderPresentation: React.FC<FieldHeaderProps> = ({
 		}
 		occupiedRows[row] = 1; // Занимаем строку
 
-		const defaultColor = '#79ede4'; // Дефолтный цвет фона события события
+		const defaultColor = '#79ede4'; // Дефолтный цвет фона события
 
 		const backgroundColor =
 			event.colorId && staticCalendarColors[event.colorId]
