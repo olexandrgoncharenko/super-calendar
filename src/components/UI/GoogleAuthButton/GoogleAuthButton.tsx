@@ -18,7 +18,7 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = (props) => {
 			<div className={styles.button__inner}>
 				<div
 					className={styles.button__logo}
-					style={{ backgroundImage: `url(/images/google-logo.svg)` }}
+					style={{ backgroundImage: `url(/images/google.svg)` }}
 				></div>
 				<div className={styles.button__text}>
 					{isSignedIn ? 'Выйти с Google' : 'Войти через Google'}

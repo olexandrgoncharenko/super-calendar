@@ -1,18 +1,17 @@
 .button {
+	height: 34px;
 	padding: 2px;
 	background-color: #4285f4;
 	transition: all.3s ease;
-	border: 1px solid rgba(66, 133, 244, 1);
 }
 .button__inner {
 	display: flex;
 	align-items: center;
 }
 .button__logo {
-	width: 40px;
-	height: 40px;
+	width: 30px;
+	height: 30px;
 	background-color: #fff;
-	background-size: 32px 32px;
 	background-size: 28px 28px;
 	background-repeat: no-repeat;
 	background-position: center;
@@ -22,8 +21,8 @@
 	font-weight: 500;
 	line-height: 1.2;
 	color: #fff;
-	padding: 0 16px;
-	font-size: 16px;
+	padding: 0 6px;
+	font-size: 14px;
 	letter-spacing: 0.01em;
 	transition: color 0.3s ease;
 }
