@@ -3,30 +3,31 @@ import styles from './DayOrWeekView.module.css';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { getDatesForWeek } from '../../../utils/getDatesForWeek';
-import { useAuth } from '../../../context/useAuth';
+import { useGoogleAuth } from '../../../context/useGoogleAuth';
 import FieldHeader from '../../FieldHeader.tsx/FieldHeader';
 import { CalendarEvent } from '../../../types/CalendarEvent';
 import { DayEventGrid } from '../../DayEventGrid/DayEventGrid';
 
 import { TimeSlots } from '../../TimeSlots/TimeSlots';
+import { useGoogleServices } from '../../../hooks/useGoogleServices';
 
 const DayOrWeekView: React.FC = () => {
-	const currentDate = useSelector((state: RootState) => state.currentDate);
 	const view = useSelector((state: RootState) => state.view);
-	const [datesForDisplay, setDatesForDisplay] = useState<string[]>(() => {
-		return view === 'week' ? getDatesForWeek(currentDate) : [currentDate];
-	});
 	const selectedCalendarLists = useSelector(
 		(state: RootState) => state.selectedCalendarLists
 	);
-	const tableRef = useRef<HTMLDivElement | null>(null);
-	const { allEvents, isSignedIn } = useAuth();
+	const currentDate = useSelector((state: RootState) => state.currentDate);
+	const [datesForDisplay, setDatesForDisplay] = useState<string[]>(() => {
+		return view === 'week' ? getDatesForWeek(currentDate) : [currentDate];
+	});
 	const [fullDayEvents, setFullDayEvents] = useState<CalendarEvent[]>([]);
 	const [timeSlotEvents, setTimesSlotEvents] = useState<CalendarEvent[]>([]);
+	const tableRef = useRef<HTMLDivElement | null>(null);
+	const { isSignedIn } = useGoogleAuth();
+	const { allEvents } = useGoogleServices();
 
 	const filteredEventsByCalendar = (calendars: any) => {
 		if (selectedCalendarLists.length === 0) {
-			console.log('No calendars selected');
 			setFullDayEvents([]);
 			return [];
 		}
@@ -34,7 +35,7 @@ const DayOrWeekView: React.FC = () => {
 		const allFilteredEventsByCalendar = calendars.reduce(
 			(acc: any, calendar: any) => {
 				if (selectedCalendarLists.includes(calendar.id)) {
-					acc.push(...calendar.events); // быстрее, чем concat
+					acc.push(...calendar.events);
 				}
 				return acc;
 			},
@@ -89,9 +90,10 @@ const DayOrWeekView: React.FC = () => {
 	useEffect(() => {
 		if (isSignedIn) {
 			filteredEventsByCalendar(allEvents);
-		} else {
-			console.log('Waiting for  sign-in...');
 		}
+		// else {
+		// 	console.log('Waiting for  sign-in...');
+		// }
 	}, [allEvents, selectedCalendarLists, isSignedIn, datesForDisplay, view]);
 
 	useEffect(() => {

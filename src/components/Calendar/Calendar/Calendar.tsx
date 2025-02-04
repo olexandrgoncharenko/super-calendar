@@ -12,7 +12,7 @@ const Calendar = () => {
 	let currentDate = new Date(
 		useSelector((state: RootState) => state.currentDate)
 	); // Выбраная дата при клике на день календаря
-	console.log(`currentDate: ${currentDate}`);
+	// console.log(`currentDate: ${currentDate}`);
 
 	let activeCalendarViewMonthAndYear = useSelector(
 		(state: RootState) => state.activeCalendarViewMonthAndYear
@@ -28,7 +28,7 @@ const Calendar = () => {
 	);
 
 	const dateNow = new Date();
-	console.log(`dateNow: ${dateNow}`);
+	// console.log(`dateNow: ${dateNow}`);
 
 	// console.log(allDaysToDisplay);
 

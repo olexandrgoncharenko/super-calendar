@@ -11,7 +11,7 @@
 	color: #fff;
 	font-family: 'Inter', serif;
 	font-weight: 400;
-	font-size: 30px;
+	font-size: 28px;
 	line-height: 1;
 }
 .month__title::first-letter {
@@ -19,7 +19,7 @@
 }
 .month__title span {
 	color: #ef4444;
-	margin-left: 8px;
+	margin-left: 4px;
 	line-height: 1;
 }
 .month__actions {
