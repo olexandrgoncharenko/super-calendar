@@ -5,7 +5,7 @@ import { useGoogleAuth } from '../context/useGoogleAuth';
 import { CalendarEvent } from '../types/CalendarEvent';
 import { FetchedEvent } from '../types/FetchedEvent';
 import { formatEventToLocalTime } from '../utils/formatEventToLocalTime';
-import { CalendarListWithEvents } from './../types/CalendarListWithEvents';
+import { CalendarListWithEvents } from '../types/CalendarListWithEvents';
 
 export interface UnifiedListItem {
 	id: string;
@@ -32,40 +32,37 @@ export const useGoogleServices = () => {
 	};
 
 	const fetchCalendarLists = async () => {
+		if (!isSignedIn) return;
+
 		try {
-			if (isSignedIn) {
-				const token = getToken();
+			const token = getToken();
+			const response = await fetch(
+				'https://www.googleapis.com/calendar/v3/users/me/calendarList',
+				{
+					method: 'GET',
+					headers: {
+						Authorization: `Bearer ${token}`,
+						Accept: 'application/json',
+					},
+				}
+			);
 
-				const response = await fetch(
-					'https://www.googleapis.com/calendar/v3/users/me/calendarList',
-					{
-						method: 'GET',
-						headers: {
-							Authorization: `Bearer ${token}`,
-							Accept: 'application/json',
-						},
-					}
+			if (!response.ok) {
+				throw new Error(
+					`Failed to fetch calendars: ${response.statusText}`
 				);
+			}
 
-				if (!response.ok) {
-					throw new Error(
-						`Failed to fetch calendars: ${response.statusText}`
-					);
-				}
-
-				const data = await response.json();
-				if (data.items) {
-					const calendarLists = data.items.map((item: any) => ({
-						id: item.id,
-						title: item.summary,
-						color:
-							staticCalendarColors[item.colorId] ||
-							staticCalendarColors['default'],
-					}));
-					setUserCalendarLists(calendarLists);
-				}
-			} else {
-				console.error('Google API not loaded or user not signed in.');
+			const data = await response.json();
+			if (data.items) {
+				const calendarLists = data.items.map((item: any) => ({
+					id: item.id,
+					title: item.summary,
+					color:
+						staticCalendarColors[item.colorId] ||
+						staticCalendarColors['default'],
+				}));
+				setUserCalendarLists(calendarLists);
 			}
 		} catch (err) {
 			console.error('Error fetching calendar lists:', err);
@@ -78,80 +75,93 @@ export const useGoogleServices = () => {
 		}
 	}, [isSignedIn, isGoogleApiLoaded]);
 
-	const fetchEventsForAllCalendarLists = async () => {
+	const fetchAllEventsForCalendar = async (calendarId: string) => {
 		try {
-			const calendarListWithEvents: CalendarListWithEvents[] = [];
-			// Time constraints: last year for completed events
+			const token = getToken();
 			const now = new Date();
 			const oneYearAgo = new Date();
 			oneYearAgo.setFullYear(now.getFullYear() - 1);
 
-			const token = getToken();
+			const fetchEvents = async (timeMin: string, timeMax?: string) => {
+				let events: CalendarEvent[] = [];
+				let nextPageToken: string | null = null;
 
-			for (const calendarList of userCalendarLists) {
-				const encodedCalendarId = encodeURIComponent(calendarList.id);
-				// Fetch upcoming events (from now)
-				const upcomingResponse = await fetch(
-					`https://www.googleapis.com/calendar/v3/calendars/${encodedCalendarId}/events?maxResults=999&timeMin=${now.toISOString()}&singleEvents=true&orderBy=startTime`,
-					{
+				do {
+					const url = new URL(
+						`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(
+							calendarId
+						)}/events`
+					);
+					url.searchParams.append('timeMin', timeMin);
+					if (timeMax) url.searchParams.append('timeMax', timeMax);
+					url.searchParams.append('singleEvents', 'true');
+					url.searchParams.append('orderBy', 'startTime');
+					if (nextPageToken)
+						url.searchParams.append('pageToken', nextPageToken);
+
+					const response = await fetch(url.toString(), {
 						headers: {
 							Authorization: `Bearer ${token}`,
 							Accept: 'application/json',
 						},
-					}
-				);
-
-				let upcomingEvents: CalendarEvent[] = [];
-				if (upcomingResponse.ok) {
-					const upcomingData = await upcomingResponse.json();
-					upcomingEvents = upcomingData.items
-						? upcomingData.items.map((event: FetchedEvent) =>
-								formatEventToLocalTime(event)
-						  )
-						: [];
-				} else {
-					console.warn(
-						`No upcoming events found for calendar with ID: ${calendarList.id}`
-					);
-				}
-				// Fetch completed events (from one year ago to now)
-				const completedResponse = await fetch(
-					`https://www.googleapis.com/calendar/v3/calendars/${encodedCalendarId}/events?maxResults=999&timeMin=${oneYearAgo.toISOString()}&timeMax=${now.toISOString()}&singleEvents=true&orderBy=startTime`,
-					{
-						headers: {
-							Authorization: `Bearer ${token}`,
-							Accept: 'application/json',
-						},
-					}
-				);
-
-				let completedEvents: CalendarEvent[] = [];
-				if (completedResponse.ok) {
-					const completedData = await completedResponse.json();
-					completedEvents = completedData.items
-						? completedData.items.map((event: FetchedEvent) =>
-								formatEventToLocalTime(event)
-						  )
-						: [];
-				} else {
-					console.warn(
-						`No completed events found for calendar with ID: ${calendarList.id}`
-					);
-				}
-				// Combine events
-				const allEventsForCalendar = [
-					...upcomingEvents,
-					...completedEvents,
-				];
-				if (allEventsForCalendar.length > 0) {
-					calendarListWithEvents.push({
-						id: calendarList.id,
-						title: calendarList.title,
-						events: allEventsForCalendar,
 					});
-				}
-			}
-			setAllEvents(calendarListWithEvents);
+
+					if (!response.ok) {
+						console.warn(
+							`No events found for calendar ${calendarId}: ${response.statusText}`
+						);
+						break;
+					}
+
+					const data = await response.json();
+					const newEvents = data.items
+						? data.items.map((event: FetchedEvent) =>
+								formatEventToLocalTime(event)
+						  )
+						: [];
+					events = [...events, ...newEvents];
+					nextPageToken = data.nextPageToken || null;
+				} while (nextPageToken);
+
+				return events;
+			};
+
+			const [upcomingEvents, completedEvents] = await Promise.all([
+				fetchEvents(now.toISOString()), // Будущие события
+				fetchEvents(oneYearAgo.toISOString(), now.toISOString()), // Завершенные события за год
+			]);
+
+			return {
+				id: calendarId,
+				title: `Calendar ${calendarId}`, // Добавляем title
+				events: [...upcomingEvents, ...completedEvents],
+			};
+		} catch (err) {
+			console.error(
+				`Error fetching events for calendar ${calendarId}:`,
+				err
+			);
+			return {
+				id: calendarId,
+				title: `Calendar ${calendarId}`,
+				events: [],
+			};
+		}
+	};
+
+	const fetchEventsForAllCalendarLists = async () => {
+		if (!isSignedIn || userCalendarLists.length === 0) return;
+
+		try {
+			const eventsData = await Promise.all(
+				userCalendarLists.map((calendar) =>
+					fetchAllEventsForCalendar(calendar.id)
+				)
+			);
+			const formattedEvents = eventsData.filter(
+				(calendar) => calendar.events.length > 0
+			);
+			setAllEvents(formattedEvents);
 		} catch (err) {
 			console.error('Error fetching events for all calendar lists:', err);
 		}

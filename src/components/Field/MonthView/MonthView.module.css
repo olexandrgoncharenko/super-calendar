@@ -1,0 +1,7 @@
+.days {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+}
+.dayContainer {
+	border: 1px solid red;
+}

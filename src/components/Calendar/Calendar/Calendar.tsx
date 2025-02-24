@@ -1,5 +1,6 @@
 import styles from './Calendar.module.css';
-import { useDaysToShowInCalendar } from '../../../hooks/useDaysToShowInCalendar';
+import { useGetDatesForCalendar } from '../../../hooks/useGetDatesForCalendar';
+// import { useDaysToShowInCalendar } from '../../../hooks/useDaysToShowInCalendar';
 import { useSelector, useDispatch } from 'react-redux';
 import {
 	setCurrentDate,
@@ -12,31 +13,16 @@ const Calendar = () => {
 	let currentDate = new Date(
 		useSelector((state: RootState) => state.currentDate)
 	); // Выбраная дата при клике на день календаря
-	// console.log(`currentDate: ${currentDate}`);
 
 	let activeCalendarViewMonthAndYear = useSelector(
 		(state: RootState) => state.activeCalendarViewMonthAndYear
 	);
-
-	// console.log(`calendarViewDate: ${JSON.stringify(calendarViewDate)}`);
-
-	// const allDaysToDisplay = useDaysToShowInCalendar(currentDate);
-	const daysToDisplay = useDaysToShowInCalendar(
-		// const allDaysToDisplay = useDaysToShowInCalendar(
+	const daysToDisplay = useGetDatesForCalendar(
 		activeCalendarViewMonthAndYear.year,
 		activeCalendarViewMonthAndYear.month
 	);
 
 	const dateNow = new Date();
-	// console.log(`dateNow: ${dateNow}`);
-
-	// console.log(allDaysToDisplay);
-
-	// const daysToDisplay = allDaysToDisplay;
-	// currentDate.getMonth() === calendarViewDate.month
-	// 	? allDaysToDisplay
-	// 	: [];
-	// const daysToDisplay = useDaysToShowInCalendar(currentDate);
 
 	const handleDayClick = (day: Date) => {
 		// Получаем локальные год, месяц и день
@@ -49,11 +35,6 @@ const Calendar = () => {
 
 		let utcDateInString = utcDate.toISOString();
 
-		// console.log(`incomeDay: ${incomeDay}`);
-		// console.log(`click day: ${day}`);
-		// console.log(`date click (UTC): ${utcDate.toISOString()}`);
-		// console.log(`finish date: ${utcDateInString}`);
-		// Используйте UTC дату для сохранения или других операций
 		dispatch(setCurrentDate(utcDateInString));
 		dispatch(setActiveCalendarMonthAndYear({ year, month }));
 	};
@@ -71,25 +52,6 @@ const Calendar = () => {
 					<div>Нд</div>
 				</div>
 				<div className={styles.days}>
-					{/* {daysToDisplay.map((day: any, index: any) => (
-						<div
-							key={index}
-							className={`${styles.day} ${
-								day.isCurrentMonth
-									? styles.currentMonth
-									: styles.otherMonth
-							} ${
-								day.day === currentDate.getDate() &&
-								day.date.getMonth() === currentDate.getMonth()
-									? styles.activeDay
-									: styles.currentMonth
-							}`}
-							onClick={() => handleDayClick(day.date)}
-						>
-							{day.day}
-						</div>
-					))} */}
-
 					{daysToDisplay.map((day: any, index: any) => {
 						// Проверяем, является ли день сегодняшним
 						const isToday =

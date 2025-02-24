@@ -2,6 +2,6 @@ import { CalendarEvent } from './CalendarEvent';
 
 export interface CalendarListWithEvents {
 	id: string;
-	title: string | undefined;
+	title?: string;
 	events: CalendarEvent[];
 }

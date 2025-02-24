@@ -91,9 +91,6 @@ const DayOrWeekView: React.FC = () => {
 		if (isSignedIn) {
 			filteredEventsByCalendar(allEvents);
 		}
-		// else {
-		// 	console.log('Waiting for  sign-in...');
-		// }
 	}, [allEvents, selectedCalendarLists, isSignedIn, datesForDisplay, view]);
 
 	useEffect(() => {
